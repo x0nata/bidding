@@ -165,7 +165,6 @@ const connectDB = async () => {
 
         // Essential options for serverless
         bufferCommands: true,             // Enable buffering for better reliability
-        bufferMaxEntries: 0,              // No buffer limit
 
         // Network optimization
         family: 4,                        // Force IPv4
@@ -331,8 +330,17 @@ app.get("/health", async (req, res) => {
     console.log('🔗 URI format:', mongoURI ? mongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@') : 'NOT_FOUND');
 
     // Force connection attempt for health check
-    const connection = await connectDB();
-    console.log('🔄 Connection attempt result:', !!connection);
+    let connectionAttempted = false;
+    let connection = null;
+
+    try {
+      connectionAttempted = true;
+      connection = await connectDB();
+      console.log('🔄 Connection attempt result:', !!connection);
+    } catch (connectError) {
+      console.error('❌ Connection attempt failed:', connectError.message);
+      connection = null;
+    }
 
     const dbState = mongoose.connection.readyState;
     const dbStates = {
@@ -358,7 +366,8 @@ app.get("/health", async (req, res) => {
       version: "1.0.0",
       debug: {
         mongoUriAvailable: !!mongoURI,
-        connectionAttempted: !!connection
+        connectionAttempted: connectionAttempted,
+        connectionSuccessful: !!connection
       }
     });
   } catch (error) {
