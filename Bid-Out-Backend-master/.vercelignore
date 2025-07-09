@@ -1,0 +1,61 @@
+# Development files
+.env
+.env.local
+.env.development
+.env.test
+
+# Node modules (Vercel installs these)
+node_modules/
+
+# Development tools
+nodemon.json
+.nodemonrc
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Local uploads (use Cloudinary in production)
+uploads/
+
+# Scripts (not needed in production)
+scripts/
+
+# Seeds (not needed in production)
+seeds/
+
+# Development server file
+server.js
+
+# Test files
+test/
+tests/
+*.test.js
+*.spec.js
