@@ -20,11 +20,19 @@ class WebSocketService {
       return;
     }
 
+    // 🚨 VERCEL COMPATIBILITY: Check if WebSocket is disabled
     const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
-    
+    const WEBSOCKET_ENABLED = process.env.REACT_APP_ENABLE_WEBSOCKET !== 'false';
+
+    if (!SOCKET_URL || !WEBSOCKET_ENABLED) {
+      console.log('🔄 WebSocket disabled for Vercel serverless - using polling mode');
+      this.isConnected = false;
+      return;
+    }
+
     this.socket = io(SOCKET_URL, {
       withCredentials: true,
-      transports: ['websocket', 'polling'],
+      transports: ['polling'], // 🔧 FIXED: Only use polling for Vercel compatibility
     });
 
     this.socket.on('connect', () => {

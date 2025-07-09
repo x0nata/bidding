@@ -38,6 +38,7 @@ app.use(
       const allowedOrigins = [
         process.env.FRONTEND_URL,
         'https://bidding-sandy.vercel.app',
+        'https://bidding-9vw1.vercel.app', // 🔧 ADDED: Current frontend URL
         'https://bidding-3yga80dqn-x0natas-projects.vercel.app',
         'http://localhost:3000' // For development
       ].filter(Boolean);
@@ -680,6 +681,53 @@ app.get("/debug/cors", (req, res) => {
     environment: {
       FRONTEND_URL: process.env.FRONTEND_URL || 'NOT_SET',
       NODE_ENV: process.env.NODE_ENV || 'NOT_SET'
+    }
+  });
+});
+
+// API Routes verification endpoint
+app.get("/debug/routes", (req, res) => {
+  res.json({
+    message: "Backend API Routes Verification",
+    timestamp: new Date().toISOString(),
+    availableRoutes: {
+      authentication: {
+        login: "POST /api/users/login",
+        register: "POST /api/users/register",
+        logout: "GET /api/users/logout",
+        checkAuth: "GET /api/users/loggedin",
+        getUser: "GET /api/users/getuser"
+      },
+      products: {
+        getAll: "GET /api/product",
+        getById: "GET /api/product/:id",
+        getActiveAuctions: "GET /api/product/auctions/active",
+        getUpcomingAuctions: "GET /api/product/auctions/upcoming",
+        getUserProducts: "GET /api/product/user",
+        create: "POST /api/product",
+        update: "PUT /api/product/:id",
+        delete: "DELETE /api/product/:id"
+      },
+      categories: {
+        getAll: "GET /api/category",
+        getBySlug: "GET /api/category/slug/:slug",
+        getByType: "GET /api/category/types",
+        getHierarchy: "GET /api/category/hierarchy"
+      },
+      bidding: {
+        placeBid: "POST /api/bidding",
+        getBidHistory: "GET /api/bidding/:productId",
+        getUserActivity: "GET /api/bidding/user/activity",
+        getActiveBidsCount: "GET /api/bidding/stats/active-bids-count"
+      }
+    },
+    databaseStatus: {
+      connected: mongoose.connection.readyState === 1,
+      readyState: mongoose.connection.readyState
+    },
+    serverInfo: {
+      environment: process.env.NODE_ENV || 'development',
+      timestamp: new Date().toISOString()
     }
   });
 });
