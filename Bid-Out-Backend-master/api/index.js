@@ -109,6 +109,20 @@ const connectDB = async () => {
       }
 
       console.log('🔗 Connection URI format:', mongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
+      console.log('🔗 URI length:', mongoURI.length);
+      console.log('🔗 URI parameters:', mongoURI.includes('?') ? mongoURI.split('?')[1] : 'none');
+
+      // Test URI parsing before attempting connection
+      try {
+        const testUrl = new URL(mongoURI);
+        console.log('✅ URI parsing test passed');
+        console.log('🔗 Protocol:', testUrl.protocol);
+        console.log('🔗 Hostname:', testUrl.hostname);
+        console.log('🔗 Database:', testUrl.pathname);
+      } catch (parseError) {
+        console.error('❌ URI parsing test failed:', parseError.message);
+        throw new Error(`Invalid MongoDB URI format: ${parseError.message}`);
+      }
 
       // Close existing connection if in disconnecting state
       if (mongoose.connection.readyState === 3) {
@@ -116,6 +130,7 @@ const connectDB = async () => {
         await mongoose.connection.close();
       }
 
+      console.log('🔄 Attempting mongoose.connect...');
       // FIXED: Serverless-optimized connection options
       const conn = await mongoose.connect(mongoURI, {
         // Balanced timeouts for serverless environment
@@ -326,7 +341,7 @@ app.get("/health", async (req, res) => {
   }
 });
 
-// Debug endpoint to check environment variables (remove after debugging)
+// Enhanced debug endpoint to check environment variables and connection string details
 app.get("/debug/env", (req, res) => {
   const mongoVars = Object.keys(process.env).filter(key =>
     key.includes('MONGO') || key.includes('DATABASE') || key === 'NODE_ENV'
@@ -335,23 +350,110 @@ app.get("/debug/env", (req, res) => {
   const envInfo = {};
   mongoVars.forEach(key => {
     if (key.includes('MONGO') || key.includes('DATABASE')) {
-      // Mask sensitive connection strings
-      envInfo[key] = process.env[key] ?
-        process.env[key].replace(/\/\/[^:]+:[^@]+@/, '//***:***@') :
-        'NOT_SET';
+      // Show more details for debugging while masking credentials
+      const value = process.env[key];
+      if (value) {
+        envInfo[key] = {
+          masked: value.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'),
+          length: value.length,
+          startsWith: value.substring(0, 20),
+          hasSpecialChars: /[<>"|{}\\^`\[\]]/.test(value),
+          parameterCount: (value.split('?')[1] || '').split('&').length
+        };
+      } else {
+        envInfo[key] = 'NOT_SET';
+      }
     } else {
       envInfo[key] = process.env[key] || 'NOT_SET';
     }
   });
 
+  // Test connection string parsing
+  const mongoURI = process.env.MONGO_URI || process.env.DATABASE_CLOUD;
+  let parseTest = null;
+  if (mongoURI) {
+    try {
+      // Test if the URI can be parsed by Node.js URL parser
+      const url = new URL(mongoURI);
+      parseTest = {
+        protocol: url.protocol,
+        hostname: url.hostname,
+        database: url.pathname.substring(1),
+        searchParams: Object.fromEntries(url.searchParams),
+        isValid: true
+      };
+    } catch (error) {
+      parseTest = {
+        isValid: false,
+        error: error.message
+      };
+    }
+  }
+
   res.json({
-    message: "Environment Variables Debug",
+    message: "Enhanced Environment Variables Debug",
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     mongoVariables: envInfo,
+    connectionStringTest: parseTest,
     totalEnvVars: Object.keys(process.env).length
   });
 });
+
+// Test endpoint to try different connection string formats
+app.get("/debug/connection-test", async (req, res) => {
+  const results = [];
+
+  // Test 1: Basic connection string without parameters
+  const basicURI = "mongodb+srv://bid:wasd1234@bid.cfyzacu.mongodb.net/bidding_site";
+  results.push(await testConnectionString("Basic URI", basicURI));
+
+  // Test 2: With minimal parameters
+  const minimalURI = "mongodb+srv://bid:wasd1234@bid.cfyzacu.mongodb.net/bidding_site?retryWrites=true&w=majority";
+  results.push(await testConnectionString("Minimal URI", minimalURI));
+
+  // Test 3: Current environment variable
+  const envURI = process.env.MONGO_URI || process.env.DATABASE_CLOUD;
+  results.push(await testConnectionString("Environment URI", envURI));
+
+  res.json({
+    message: "Connection String Testing",
+    timestamp: new Date().toISOString(),
+    tests: results
+  });
+});
+
+async function testConnectionString(name, uri) {
+  if (!uri) {
+    return { name, status: "SKIPPED", reason: "URI not provided" };
+  }
+
+  try {
+    // Test URL parsing
+    const url = new URL(uri);
+
+    // Test mongoose connection (but don't actually connect)
+    const testResult = {
+      name,
+      status: "PARSE_SUCCESS",
+      length: uri.length,
+      protocol: url.protocol,
+      hostname: url.hostname,
+      database: url.pathname.substring(1),
+      parameterCount: uri.includes('?') ? uri.split('?')[1].split('&').length : 0,
+      parameters: uri.includes('?') ? Object.fromEntries(new URLSearchParams(uri.split('?')[1])) : {}
+    };
+
+    return testResult;
+  } catch (error) {
+    return {
+      name,
+      status: "PARSE_FAILED",
+      error: error.message,
+      uri: uri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')
+    };
+  }
+}
 
 // API Routes with database connection middleware
 app.use("/api/users", ensureDBConnection, userRoute);
