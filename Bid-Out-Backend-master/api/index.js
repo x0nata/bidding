@@ -57,79 +57,113 @@ app.use(
 // Configure DNS for better MongoDB Atlas connectivity
 dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1', '1.0.0.1']);
 
-// MongoDB Connection for Serverless - Fixed for Vercel
-let cachedConnection = null;
+// FIXED: Serverless-optimized MongoDB Connection with proper caching
+let isConnecting = false;
 
 const connectDB = async () => {
   try {
     console.log('🔄 connectDB() called - checking connection state...');
+    console.log('🔄 Current mongoose readyState:', mongoose.connection.readyState);
 
-    // Use cached connection if available and connected
-    if (cachedConnection && mongoose.connection.readyState === 1) {
-      console.log('🔄 Using cached MongoDB connection');
-      return cachedConnection;
+    // If already connected, return immediately
+    if (mongoose.connection.readyState === 1) {
+      console.log('✅ Using existing MongoDB connection (readyState: 1)');
+      return mongoose.connection;
     }
 
-    const mongoURI = process.env.MONGO_URI || process.env.DATABASE_CLOUD;
-    console.log('🔄 Environment check - MONGO_URI exists:', !!process.env.MONGO_URI);
-    console.log('🔄 Environment check - DATABASE_CLOUD exists:', !!process.env.DATABASE_CLOUD);
-    console.log('🔄 All env vars containing MONGO:', Object.keys(process.env).filter(key => key.includes('MONGO')));
+    // If currently connecting, wait for it to complete
+    if (mongoose.connection.readyState === 2 || isConnecting) {
+      console.log('⏳ Connection in progress, waiting...');
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Connection timeout while waiting for existing connection'));
+        }, 30000);
 
-    if (!mongoURI) {
-      console.error('❌ No MongoDB connection string found');
-      console.error('Available env vars:', Object.keys(process.env).filter(key => key.includes('MONGO')));
-      return null;
+        mongoose.connection.once('connected', () => {
+          clearTimeout(timeout);
+          console.log('✅ Waited connection completed successfully');
+          resolve(mongoose.connection);
+        });
+
+        mongoose.connection.once('error', (error) => {
+          clearTimeout(timeout);
+          reject(error);
+        });
+      });
     }
 
-    console.log('🔄 Establishing new MongoDB connection...');
-    console.log('🔗 Connection URI format:', mongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
-    console.log('🔄 Current mongoose connection state:', mongoose.connection.readyState);
+    // If disconnected or disconnecting, establish new connection
+    if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 3) {
+      console.log('🔄 Establishing new MongoDB connection...');
+      isConnecting = true;
 
-    // Close existing connection if in bad state
-    if (mongoose.connection.readyState === 2 || mongoose.connection.readyState === 3) {
-      console.log('🔄 Closing existing connection in bad state');
-      await mongoose.connection.close();
+      const mongoURI = process.env.MONGO_URI || process.env.DATABASE_CLOUD;
+      console.log('🔄 Environment check - MONGO_URI exists:', !!process.env.MONGO_URI);
+      console.log('🔄 Environment check - DATABASE_CLOUD exists:', !!process.env.DATABASE_CLOUD);
+
+      if (!mongoURI) {
+        console.error('❌ No MongoDB connection string found');
+        console.error('Available env vars:', Object.keys(process.env).filter(key => key.includes('MONGO')));
+        isConnecting = false;
+        return null;
+      }
+
+      console.log('🔗 Connection URI format:', mongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
+
+      // Close existing connection if in disconnecting state
+      if (mongoose.connection.readyState === 3) {
+        console.log('🔄 Waiting for existing connection to close...');
+        await mongoose.connection.close();
+      }
+
+      // FIXED: Serverless-optimized connection options
+      const conn = await mongoose.connect(mongoURI, {
+        // Balanced timeouts for serverless environment
+        serverSelectionTimeoutMS: 15000, // 15 seconds (faster than 30s)
+        connectTimeoutMS: 15000,          // 15 seconds (faster than 30s)
+        socketTimeoutMS: 30000,           // 30 seconds for operations
+
+        // Serverless-optimized pool settings
+        maxPoolSize: 1,                   // Single connection for serverless
+        minPoolSize: 0,                   // No minimum connections
+        maxIdleTimeMS: 60000,             // Keep connection alive longer
+
+        // Essential options for serverless
+        bufferCommands: false,            // Fail fast if not connected
+        bufferMaxEntries: 0,              // No buffering
+        retryWrites: true,
+
+        // Network optimization
+        family: 4,                        // Force IPv4
+        directConnection: false,
+
+        // Serverless optimizations
+        heartbeatFrequencyMS: 60000,      // Less frequent heartbeats
+      });
+
+      console.log('✅ MongoDB Atlas connected successfully');
+      console.log(`📍 Connected to: ${conn.connection.host}`);
+      console.log(`🗄️  Database: ${conn.connection.name}`);
+      console.log(`🔌 Final connection state: ${conn.connection.readyState}`);
+
+      isConnecting = false;
+      return conn;
     }
 
-    // FIXED: Optimized connection options for Vercel serverless
-    const conn = await mongoose.connect(mongoURI, {
-      // FIXED: Use longer timeouts that match your environment variables
-      serverSelectionTimeoutMS: 30000, // 30 seconds (was 5000)
-      connectTimeoutMS: 30000,          // 30 seconds (was 5000)
-      socketTimeoutMS: 45000,           // 45 seconds
+    // Should not reach here
+    console.warn('⚠️ Unexpected connection state:', mongoose.connection.readyState);
+    return mongoose.connection.readyState === 1 ? mongoose.connection : null;
 
-      // FIXED: Serverless-optimized pool settings
-      maxPoolSize: 3,                   // Increased from 1
-      minPoolSize: 1,                   // Minimum 1 connection
-      maxIdleTimeMS: 30000,             // 30 seconds
-
-      // FIXED: Enable buffering for better serverless compatibility
-      bufferCommands: true,             // Enable mongoose buffering (was false)
-      retryWrites: true,
-
-      // Network optimization
-      family: 4,                        // Force IPv4
-      directConnection: false,
-
-      // FIXED: Additional serverless optimizations
-      heartbeatFrequencyMS: 30000,      // 30 seconds (was 10000)
-    });
-
-    console.log('✅ MongoDB Atlas connected successfully');
-    console.log(`📍 Connected to: ${conn.connection.host}`);
-    console.log(`🗄️  Database: ${conn.connection.name}`);
-    console.log(`🔌 Final connection state: ${conn.connection.readyState}`);
-
-    cachedConnection = conn;
-    return conn;
   } catch (error) {
     console.error('❌ MongoDB connection failed:', error.message);
     console.error('❌ Error details:', {
       name: error.name,
       code: error.code,
-      codeName: error.codeName,
-      stack: error.stack
+      codeName: error.codeName
     });
+
+    // Reset connecting flag on error
+    isConnecting = false;
 
     // ADDED: More detailed error logging for debugging
     if (error.name === 'MongoServerSelectionError') {
@@ -151,32 +185,35 @@ const connectDB = async () => {
       console.error('  Check network access and firewall settings');
     }
 
-    cachedConnection = null;
     return null;
   }
 };
 
-// FIXED: Database connection middleware for API routes
+// FIXED: Robust database connection middleware for API routes
 const ensureDBConnection = async (req, res, next) => {
   try {
-    // Check if database is connected
-    if (mongoose.connection.readyState !== 1) {
-      console.log('🔄 Database not connected, attempting connection...');
-      const connection = await connectDB();
+    console.log('🔄 Middleware - checking database connection...');
+    console.log('🔄 Current readyState:', mongoose.connection.readyState);
 
-      // If connection failed, return error instead of continuing
-      if (!connection || mongoose.connection.readyState !== 1) {
-        console.error('❌ Failed to establish database connection');
-        return res.status(503).json({
-          success: false,
-          message: 'Database connection unavailable',
-          error: 'SERVICE_UNAVAILABLE',
-          details: 'Unable to connect to MongoDB Atlas. Please try again later.'
-        });
-      }
+    // Always attempt to ensure connection
+    const connection = await connectDB();
+
+    // Check final connection state
+    const finalState = mongoose.connection.readyState;
+    console.log('🔄 Final readyState after connectDB:', finalState);
+
+    if (finalState !== 1) {
+      console.error('❌ Database connection not established, readyState:', finalState);
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection unavailable',
+        error: 'SERVICE_UNAVAILABLE',
+        details: `Database readyState: ${finalState} (expected: 1)`,
+        readyState: finalState
+      });
     }
 
-    // Connection successful, proceed to route
+    console.log('✅ Database connection confirmed, proceeding to route');
     next();
   } catch (error) {
     console.error('❌ Database connection middleware error:', error);
@@ -184,7 +221,8 @@ const ensureDBConnection = async (req, res, next) => {
       success: false,
       message: 'Database connection error',
       error: 'CONNECTION_FAILED',
-      details: error.message
+      details: error.message,
+      readyState: mongoose.connection.readyState
     });
   }
 };
