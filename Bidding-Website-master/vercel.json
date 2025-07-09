@@ -83,13 +83,7 @@
       ]
     }
   ],
-  "env": {
-    "REACT_APP_BACKEND_URL": "@backend_url",
-    "REACT_APP_API_URL": "@api_url",
-    "REACT_APP_WEBSOCKET_URL": "@websocket_url",
-    "REACT_APP_SOCKET_URL": "@socket_url",
-    "REACT_APP_FRONTEND_URL": "@frontend_url"
-  },
+
   "build": {
     "env": {
       "GENERATE_SOURCEMAP": "false",
