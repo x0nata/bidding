@@ -1,0 +1,463 @@
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { placeBid } from '../../redux/slices/biddingSlice';
+import { Title, Body } from '../common/Design';
+import { MdGavel, MdTrendingUp, MdWarning, MdCheckCircle, MdError, MdWifi, MdWifiOff } from 'react-icons/md';
+import { FiClock, FiDollarSign, FiUsers, FiEye, FiLock } from 'react-icons/fi';
+import { RiAuctionFill } from 'react-icons/ri';
+import { BsGraphUp, BsShieldCheck } from 'react-icons/bs';
+import BidConfirmationModal from './BidConfirmationModal';
+import CountdownTimer from './CountdownTimer';
+import { useAuctionUpdates } from '../../hooks/useBiddingUpdates';
+import { validateBidAmount } from '../../utils/validation';
+import { useBiddingBalance } from '../../hooks/useBalanceUpdates';
+import AddBalanceModal from '../payment/AddBalanceModal';
+import ErrorHandlingService from '../../services/errorHandlingService';
+import { formatETB, generateQuickBidAmounts } from '../../utils/currency';
+
+const BiddingInterface = ({ auction, onBidPlaced, className = '' }) => {
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [bidAmount, setBidAmount] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [bidError, setBidError] = useState('');
+  const [bidSuccess, setBidSuccess] = useState('');
+  const [currentBid, setCurrentBid] = useState(auction?.currentBid || auction?.startingBid || 0);
+  const [totalBids, setTotalBids] = useState(auction?.totalBids || 0);
+  const [lastBidder, setLastBidder] = useState(auction?.lastBidder || null);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [showAddBalanceModal, setShowAddBalanceModal] = useState(false);
+
+  // Use the balance hook for real-time balance updates
+  const {
+    balanceInfo,
+    loading: balanceLoading,
+    formatAmount,
+    validateBidAmount: validateBidBalance,
+    getMinimumBalanceMessage,
+    fetchBalanceInfo
+  } = useBiddingBalance();
+
+  // Real-time bidding updates
+  const { connectionStatus, bidUpdates, getBidUpdate, isConnected } = useAuctionUpdates(auction?.id);
+
+  // Calculate minimum bid increment
+  const calculateMinIncrement = (currentPrice) => {
+    if (currentPrice < 100) return 5;
+    if (currentPrice < 500) return 10;
+    if (currentPrice < 1000) return 25;
+    if (currentPrice < 5000) return 50;
+    if (currentPrice < 10000) return 100;
+    return 250;
+  };
+
+  const minIncrement = calculateMinIncrement(currentBid);
+  const minimumBid = currentBid + minIncrement;
+  const isAuctionActive = new Date(auction?.endDate) > new Date() && !auction?.isSoldout;
+  const isMyBid = lastBidder?.id === user?.id;
+
+
+
+  // Update local state when real-time updates arrive
+  useEffect(() => {
+    const update = getBidUpdate(auction?.id);
+    if (update) {
+      setCurrentBid(update.currentBid);
+      setTotalBids(update.totalBids);
+      setLastBidder(update.lastBidder);
+
+      // Clear success message if user was outbid
+      if (update.lastBidder?.id !== user?.id && bidSuccess) {
+        setBidSuccess('');
+      }
+    }
+  }, [bidUpdates, auction?.id, user?.id, bidSuccess, getBidUpdate]);
+
+
+
+  const validateBid = (amount) => {
+    // Use centralized validation for bid amount
+    const amountError = validateBidAmount(amount, minimumBid);
+    if (amountError) return amountError;
+
+    // Additional auction-specific validations
+    if (!isAuthenticated) {
+      return 'Please log in to place a bid';
+    }
+
+    if (!isAuctionActive) {
+      return 'This auction has ended';
+    }
+
+    // Check if user is trying to bid on their own auction
+    // Backend uses 'user' field to identify auction owner
+    const auctionOwnerId = auction?.user?._id || auction?.user;
+    const currentUserId = user?._id || user?.id;
+    
+    if (auctionOwnerId && currentUserId && auctionOwnerId.toString() === currentUserId.toString()) {
+      return 'You cannot bid on your own auction';
+    }
+
+    // Use the balance validation from the hook
+    const balanceValidation = validateBidBalance(amount);
+    if (!balanceValidation.valid) {
+      return balanceValidation.error;
+    }
+
+    return null;
+  };
+
+  const handleAddBalanceClick = () => {
+    setShowAddBalanceModal(true);
+  };
+
+  const handleAddBalanceSuccess = () => {
+    fetchBalanceInfo(); // Refresh balance immediately
+  };
+
+  const handleBidSubmit = (e) => {
+    e.preventDefault();
+    setBidError('');
+    setBidSuccess('');
+    
+    const error = validateBid(bidAmount);
+    if (error) {
+      setBidError(error);
+      return;
+    }
+    
+    setShowConfirmation(true);
+  };
+
+  const confirmBid = async () => {
+    try {
+      setIsSubmitting(true);
+      setShowConfirmation(false);
+      
+      // Use the real API to place the bid
+      const bidData = {
+        productId: auction.id || auction._id,
+        amount: parseFloat(bidAmount),
+        bidType: 'Manual'
+      };
+      
+      const response = await dispatch(placeBid(bidData)).unwrap();
+      
+      // Update local state with successful bid
+      const newBidAmount = parseFloat(bidAmount);
+      setCurrentBid(newBidAmount);
+      setTotalBids(prev => prev + 1);
+      setLastBidder({ id: user?.id, name: user?.name });
+      setBidSuccess(`Bid placed successfully for ${formatETB(newBidAmount)}!`);
+      setBidAmount('');
+
+      // Refresh balance after placing a bid
+      fetchBalanceInfo();
+      
+      // Call parent callback
+      if (onBidPlaced) {
+        onBidPlaced({
+          amount: newBidAmount,
+          bidder: user,
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+    } catch (error) {
+      console.error('Error placing bid:', error);
+
+      // Use the error handling service for better user experience
+      const processedError = ErrorHandlingService.handleBiddingError(
+        error,
+        {
+          auctionId: auction.id,
+          bidAmount: parseFloat(bidAmount),
+          currentBid,
+          minimumBid
+        },
+        dispatch
+      );
+
+      setBidError(processedError.message);
+
+      // Handle specific error actions
+      if (processedError.code === 'INSUFFICIENT_BALANCE') {
+        // Auto-open add balance modal for insufficient balance
+        setTimeout(() => {
+          setShowAddBalanceModal(true);
+        }, 2000);
+      }
+
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const getSuggestedBids = () => {
+    return generateQuickBidAmounts(currentBid, 4);
+  };
+
+  const handleSuggestedBid = (amount) => {
+    setBidAmount(amount.toString());
+    setBidError('');
+  };
+
+  if (!auction) {
+    return (
+      <div className="bg-gray-100 p-6 rounded-lg text-center">
+        <Body className="text-gray-600">Auction information not available</Body>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`bg-white rounded-lg shadow-md border border-gray-200 ${className}`}>
+      {/* Header */}
+      <div className="bg-green text-white p-4 rounded-t-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <MdGavel className="text-2xl" />
+            <Title level={4} className="text-white">Place Your Bid</Title>
+            {/* Connection Status Indicator */}
+            <div className="flex items-center space-x-1 text-sm">
+              {isConnected ? (
+                <>
+                  <MdWifi className="text-white" />
+                  <span className="text-white opacity-75">Live</span>
+                </>
+              ) : (
+                <>
+                  <MdWifiOff className="text-red-300" />
+                  <span className="text-red-300">Offline</span>
+                </>
+              )}
+            </div>
+          </div>
+          <CountdownTimer endDate={auction.endDate} />
+        </div>
+      </div>
+
+      {/* Current Bid Info */}
+      <div className="p-4 bg-gray-50 border-b border-gray-200">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="text-center">
+            <FiDollarSign className="mx-auto text-green text-2xl mb-1" />
+            <Body className="text-gray-600 text-sm">Current Bid</Body>
+            <Title level={3} className="text-green">{formatETB(currentBid)}</Title>
+          </div>
+          <div className="text-center">
+            <FiUsers className="mx-auto text-blue-600 text-2xl mb-1" />
+            <Body className="text-gray-600 text-sm">Total Bids</Body>
+            <Title level={3} className="text-blue-600">{totalBids}</Title>
+          </div>
+          <div className="text-center">
+            <BsGraphUp className="mx-auto text-purple-600 text-2xl mb-1" />
+            <Body className="text-gray-600 text-sm">Min Increment</Body>
+            <Title level={3} className="text-purple-600">{formatETB(minIncrement)}</Title>
+          </div>
+          <div className="text-center">
+            <BsShieldCheck className="mx-auto text-orange-600 text-2xl mb-1" />
+            <Body className="text-gray-600 text-sm">Reserve</Body>
+            <Title level={3} className={auction.reserveMet ? "text-green" : "text-orange-600"}>
+              {auction.reserveMet ? 'Met' : 'Not Met'}
+            </Title>
+          </div>
+        </div>
+      </div>
+
+      {/* Last Bidder Info */}
+      {lastBidder && (
+        <div className="p-3 bg-blue-50 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <MdTrendingUp className="text-blue-600" />
+              <Body className="text-blue-800">
+                {isMyBid ? 'You are the highest bidder!' : `Leading bidder: ${lastBidder.name}`}
+              </Body>
+            </div>
+            {isMyBid && <MdCheckCircle className="text-green text-xl" />}
+          </div>
+        </div>
+      )}
+
+      {/* Bidding Form */}
+      <div className="p-6">
+        {!isAuctionActive ? (
+          <div className="text-center py-8">
+            <MdWarning className="mx-auto text-red-500 text-4xl mb-2" />
+            <Title level={4} className="text-red-600 mb-2">Auction Ended</Title>
+            <Body className="text-gray-600">This auction is no longer accepting bids.</Body>
+          </div>
+        ) : !isAuthenticated ? (
+          <div className="text-center py-8">
+            <MdWarning className="mx-auto text-orange-500 text-4xl mb-2" />
+            <Title level={4} className="text-orange-600 mb-2">Login Required</Title>
+            <Body className="text-gray-600 mb-4">Please log in to place a bid on this auction.</Body>
+            <button
+              onClick={() => navigate('/login')}
+              className="bg-green text-white px-6 py-2 rounded-lg hover:bg-primary transition-colors"
+            >
+              Log In
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Balance Information */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                  <FiDollarSign className="text-green" />
+                  Your Balance
+                </h4>
+                <button
+                  type="button"
+                  onClick={handleAddBalanceClick}
+                  className="text-sm text-green hover:text-green-600 font-medium"
+                >
+                  Add Balance
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-600">Available:</span>
+                  <span className="font-semibold text-green ml-2">
+                    {formatAmount(balanceInfo.availableBalance)}
+                  </span>
+                </div>
+                {balanceInfo.heldAmount > 0 && (
+                  <div>
+                    <span className="text-gray-600 flex items-center gap-1">
+                      <FiLock size={12} />
+                      Held:
+                    </span>
+                    <span className="font-semibold text-orange-600 ml-2">
+                      {formatAmount(balanceInfo.heldAmount)}
+                    </span>
+                  </div>
+                )}
+              </div>
+              {balanceInfo.availableBalance < minimumBid && (
+                <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+                  <strong>Insufficient Balance:</strong> You need at least {formatAmount(minimumBid)} to bid on this auction.
+                </div>
+              )}
+            </div>
+
+            <form onSubmit={handleBidSubmit} className="space-y-4">
+              {/* Bid Amount Input */}
+              <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Your Bid Amount (Minimum: {formatETB(minimumBid)})
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">ETB</span>
+                <input
+                  type="number"
+                  value={bidAmount}
+                  onChange={(e) => {
+                    setBidAmount(e.target.value);
+                    setBidError('');
+                    setBidSuccess('');
+                  }}
+                  placeholder={minimumBid.toString()}
+                  min={minimumBid}
+                  step="1"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-green focus:border-green outline-none text-lg font-medium"
+                />
+              </div>
+            </div>
+
+            {/* Suggested Bids */}
+            <div>
+              <Body className="text-gray-600 text-sm mb-2">Quick bid amounts:</Body>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {getSuggestedBids().map((amount, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => handleSuggestedBid(amount)}
+                    className="bg-gray-100 hover:bg-green hover:text-white text-gray-700 px-3 py-2 rounded-lg transition-colors text-sm font-medium"
+                  >
+                    {formatETB(amount)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Error/Success Messages */}
+            {bidError && (
+              <div className="flex items-center space-x-2 text-red-600 bg-red-50 p-3 rounded-lg">
+                <MdError />
+                <Body className="text-red-600">{bidError}</Body>
+              </div>
+            )}
+
+            {bidSuccess && (
+              <div className="flex items-center space-x-2 text-green bg-green-50 p-3 rounded-lg">
+                <MdCheckCircle />
+                <Body className="text-green">{bidSuccess}</Body>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isSubmitting || !bidAmount}
+              className="w-full bg-green text-white py-3 px-6 rounded-lg hover:bg-primary transition-colors font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>Placing Bid...</span>
+                </>
+              ) : (
+                <>
+                  <RiAuctionFill />
+                  <span>Place Bid</span>
+                </>
+              )}
+            </button>
+          </form>
+          </div>
+        )}
+      </div>
+
+      {/* Auto-refresh Toggle */}
+      <div className="px-6 pb-4">
+        <label className="flex items-center space-x-2 text-sm text-gray-600">
+          <input
+            type="checkbox"
+            checked={autoRefresh}
+            onChange={(e) => setAutoRefresh(e.target.checked)}
+            className="rounded border-gray-300 text-green focus:ring-green"
+          />
+          <span>Auto-refresh bid data</span>
+        </label>
+      </div>
+
+      {/* Bid Confirmation Modal */}
+      {showConfirmation && (
+        <BidConfirmationModal
+          bidAmount={parseFloat(bidAmount)}
+          currentBid={currentBid}
+          auctionTitle={auction.title}
+          onConfirm={confirmBid}
+          onCancel={() => setShowConfirmation(false)}
+          userBalance={balanceInfo.availableBalance}
+        />
+      )}
+
+      {/* Add Balance Modal */}
+      <AddBalanceModal
+        isOpen={showAddBalanceModal}
+        onClose={() => setShowAddBalanceModal(false)}
+        onSuccess={handleAddBalanceSuccess}
+      />
+    </div>
+  );
+};
+
+export default BiddingInterface;

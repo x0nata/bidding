@@ -1,0 +1,276 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  FiArrowUpRight, 
+  FiArrowDownLeft, 
+  FiLock, 
+  FiUnlock, 
+  FiDollarSign,
+  FiRefreshCw,
+  FiFilter,
+  FiChevronLeft,
+  FiChevronRight
+} from 'react-icons/fi';
+import { paymentApiService } from '../../services/paymentApi';
+import { showError } from '../../redux/slices/notificationSlice';
+import { useDispatch } from 'react-redux';
+
+const TransactionHistory = ({ refreshTrigger = 0, className = "" }) => {
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [selectedType, setSelectedType] = useState('');
+  const [limit] = useState(10);
+  const dispatch = useDispatch();
+
+  const transactionTypes = [
+    { value: '', label: 'All Transactions' },
+    { value: 'DEPOSIT', label: 'Deposits' },
+    { value: 'BID_HOLD', label: 'Bid Holds' },
+    { value: 'BID_RELEASE', label: 'Bid Releases' },
+    { value: 'BID_DEDUCTION', label: 'Payments' },
+    { value: 'REFUND', label: 'Refunds' }
+  ];
+
+  const fetchTransactions = async (page = 1, type = '') => {
+    try {
+      setLoading(true);
+      const response = await paymentApiService.getTransactionHistory(page, limit, type || null);
+      setTransactions(response.transactions || []);
+      setTotalPages(response.totalPages || 1);
+      setCurrentPage(page);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      dispatch(showError(error || 'Failed to fetch transaction history'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions(1, selectedType);
+  }, [refreshTrigger, selectedType]);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      fetchTransactions(page, selectedType);
+    }
+  };
+
+  const getTransactionIcon = (type) => {
+    switch (type) {
+      case 'DEPOSIT':
+        return <FiArrowDownLeft className="text-green" />;
+      case 'BID_HOLD':
+        return <FiLock className="text-orange-500" />;
+      case 'BID_RELEASE':
+        return <FiUnlock className="text-blue-500" />;
+      case 'BID_DEDUCTION':
+        return <FiArrowUpRight className="text-red-500" />;
+      case 'REFUND':
+        return <FiArrowDownLeft className="text-green" />;
+      default:
+        return <FiDollarSign className="text-gray-500" />;
+    }
+  };
+
+  const getTransactionColor = (type) => {
+    switch (type) {
+      case 'DEPOSIT':
+      case 'BID_RELEASE':
+      case 'REFUND':
+        return 'text-green';
+      case 'BID_HOLD':
+        return 'text-orange-500';
+      case 'BID_DEDUCTION':
+        return 'text-red-500';
+      default:
+        return 'text-gray-600';
+    }
+  };
+
+  const getTransactionSign = (type) => {
+    switch (type) {
+      case 'DEPOSIT':
+      case 'BID_RELEASE':
+      case 'REFUND':
+        return '+';
+      case 'BID_HOLD':
+      case 'BID_DEDUCTION':
+        return '-';
+      default:
+        return '';
+    }
+  };
+
+  const formatAmount = (amount) => {
+    return new Intl.NumberFormat('en-ET', {
+      style: 'currency',
+      currency: 'ETB',
+      minimumFractionDigits: 2
+    }).format(amount || 0);
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-ET', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getTypeLabel = (type) => {
+    const typeMap = {
+      'DEPOSIT': 'Balance Added',
+      'BID_HOLD': 'Bid Hold',
+      'BID_RELEASE': 'Bid Released',
+      'BID_DEDUCTION': 'Auction Payment',
+      'REFUND': 'Refund',
+      'COMMISSION_PAYMENT': 'Commission',
+      'WITHDRAWAL': 'Withdrawal'
+    };
+    return typeMap[type] || type;
+  };
+
+  if (loading && transactions.length === 0) {
+    return (
+      <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}>
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-gray-200 rounded w-48"></div>
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center justify-between py-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                <div>
+                  <div className="h-4 bg-gray-200 rounded w-32 mb-1"></div>
+                  <div className="h-3 bg-gray-200 rounded w-24"></div>
+                </div>
+              </div>
+              <div className="h-4 bg-gray-200 rounded w-20"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${className}`}>
+      {/* Header */}
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Transaction History</h3>
+          <button
+            onClick={() => fetchTransactions(currentPage, selectedType)}
+            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+            title="Refresh transactions"
+          >
+            <FiRefreshCw size={16} />
+          </button>
+        </div>
+
+        {/* Filter */}
+        <div className="flex items-center gap-3">
+          <FiFilter className="text-gray-400" size={16} />
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green focus:border-green"
+          >
+            {transactionTypes.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Transactions List */}
+      <div className="p-6">
+        {transactions.length === 0 ? (
+          <div className="text-center py-8">
+            <FiDollarSign className="mx-auto text-gray-300 mb-4" size={48} />
+            <h4 className="text-lg font-medium text-gray-900 mb-2">No Transactions</h4>
+            <p className="text-gray-600">
+              {selectedType ? 'No transactions found for the selected type.' : 'You haven\'t made any transactions yet.'}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {transactions.map((transaction) => (
+              <div
+                key={transaction._id}
+                className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                    {getTransactionIcon(transaction.type)}
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">
+                      {getTypeLabel(transaction.type)}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {transaction.description}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {formatDate(transaction.createdAt)}
+                    </div>
+                    {transaction.relatedProduct && (
+                      <div className="text-xs text-blue-600 mt-1">
+                        Related to: {transaction.relatedProduct.title}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className={`font-semibold ${getTransactionColor(transaction.type)}`}>
+                    {getTransactionSign(transaction.type)}{formatAmount(transaction.amount)}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Balance: {formatAmount(transaction.balanceAfter)}
+                  </div>
+                  {transaction.status !== 'COMPLETED' && (
+                    <div className="text-xs text-orange-600 mt-1">
+                      {transaction.status}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+            <div className="text-sm text-gray-600">
+              Page {currentPage} of {totalPages}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FiChevronLeft size={16} />
+              </button>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FiChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default TransactionHistory;
