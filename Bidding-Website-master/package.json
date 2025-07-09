@@ -27,7 +27,7 @@
     "build:fallback": "CI=false react-scripts build",
     "build:vercel": "npm run build && node prepare-for-vercel.js",
     "eject": "react-scripts eject",
-    "vercel-build": "npm run build:vercel",
+    "vercel-build": "npm run build",
     "vercel-build:fallback": "npm run build:fallback",
     "preview": "npm run build && npx serve -s build",
     "test": "craco test --watchAll=false",
