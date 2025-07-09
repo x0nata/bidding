@@ -11,8 +11,6 @@
   "scripts": {
     "start": "node api/index.js",
     "dev": "nodemon server.js",
-    "build": "echo 'Build completed'",
-    "vercel-build": "echo 'Vercel build completed'",
     "seed": "node scripts/seedCategories.js"
   },
   "dependencies": {
