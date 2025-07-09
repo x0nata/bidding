@@ -1,12 +1,6 @@
 {
   "version": 2,
   "name": "horn-of-antiques-backend",
-  "builds": [
-    {
-      "src": "api/index.js",
-      "use": "@vercel/node"
-    }
-  ],
   "rewrites": [
     {
       "source": "/(.*)",
@@ -15,7 +9,8 @@
   ],
   "functions": {
     "api/index.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "runtime": "nodejs20.x"
     }
   },
   "crons": [
@@ -23,5 +18,8 @@
       "path": "/api/auction-management/process-expired",
       "schedule": "*/5 * * * *"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }

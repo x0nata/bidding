@@ -79,29 +79,11 @@ class AuctionScheduler {
 
   async notifyWinner(auction, winningBid) {
     try {
-      await sendEmail({
-        email: winningBid.user.email,
-        subject: `Congratulations! You won the auction for "${auction.title}"`,
-        text: `
-Dear ${winningBid.user.name},
-
-Congratulations! You have won the auction for "${auction.title}" with your bid of $${winningBid.price}.
-
-Auction Details:
-- Item: ${auction.title}
-- Winning Bid: $${winningBid.price}
-- Auction End: ${auction.auctionEndDate}
-
-Next Steps:
-1. You will be contacted by the seller for payment and shipping arrangements
-2. Please complete payment within 48 hours
-3. Shipping details will be provided after payment confirmation
-
-Thank you for participating in Horn of Antiques!
-
-Best regards,
-Antique Auction System Team
-        `,
+      // Email functionality disabled for simplified deployment
+      console.log('📧 Email disabled - would notify auction winner:', {
+        winner: winningBid.user.email,
+        auction: auction.title,
+        price: winningBid.price
       });
     } catch (error) {
     }
@@ -180,10 +162,11 @@ Antique Auction System Team
           break;
       }
       
-      await sendEmail({
-        email: auction.user.email,
-        subject,
-        text,
+      // Email functionality disabled for simplified deployment
+      console.log('📧 Email disabled - would notify seller:', {
+        seller: auction.user.email,
+        auction: auction.title,
+        status: status
       });
     } catch (error) {
     }
@@ -197,21 +180,10 @@ Antique Auction System Team
       }).populate('user', 'name email').populate('product', 'title');
 
       for (const bid of losingBids) {
-        await sendEmail({
-          email: bid.user.email,
-          subject: `Auction ended for "${bid.product.title}"`,
-          text: `
-Dear ${bid.user.name},
-
-The auction for "${bid.product.title}" has ended.
-
-Unfortunately, your bid of $${bid.price} was not the winning bid.
-
-Thank you for participating in our Antique Auction System! We hope you'll find other interesting items in our upcoming auctions.
-
-Best regards,
-Antique Auction System Team
-          `,
+        // Email functionality disabled for simplified deployment
+        console.log('📧 Email disabled - would notify losing bidder:', {
+          bidder: bid.user.email,
+          auction: bid.product.title
         });
       }
     } catch (error) {
@@ -243,11 +215,8 @@ Horn of Antiques Team
           `;
         }
         
-        await sendEmail({
-          email: bid.user.email,
-          subject,
-          text,
-        });
+        // Email functionality disabled for simplified deployment
+        console.log('📧 Email disabled - would notify bidder:', bid.user.email);
       }
     } catch (error) {
     }

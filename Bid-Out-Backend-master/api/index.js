@@ -168,8 +168,8 @@ app.use("/api/newsletter", newsletterRoute);
 app.use("/api/payments", paymentRoute);
 app.use("/api/auction-management", auctionManagementRoute);
 
-// Static files
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+// Note: Static file serving removed for serverless compatibility
+// Files should be served from cloud storage (Cloudinary) instead
 
 // Error handling middleware
 app.use(errorHandler);

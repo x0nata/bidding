@@ -22,14 +22,8 @@ const processInstantPurchaseCompletion = async (product, winningBid, winner) => 
       winningBid
     );
 
-    // Send email notification to winner
-    await sendInstantPurchaseWinnerEmail(product, winningBid, winner);
-
-    // Send email notification to seller
-    await sendInstantPurchaseSellerEmail(product, winningBid, winner);
-
-    // Send email notifications to losing bidders
-    await sendInstantPurchaseLoserEmails(product._id, winningBid._id);
+    // Email notifications disabled for simplified deployment
+    console.log('📧 Would send instant purchase notifications to winner, seller, and losing bidders');
 
     // Send WebSocket notifications
     if (global.socketService) {
@@ -88,76 +82,20 @@ const processInstantPurchaseCompletion = async (product, winningBid, winner) => 
 
 // Email notification functions for instant purchase
 const sendInstantPurchaseWinnerEmail = async (product, winningBid, winner) => {
-  try {
-    await sendEmail({
-      email: winner.email,
-      subject: `🎉 Instant Purchase Victory! You won "${product.title}"`,
-      text: `
-Dear ${winner.name},
-
-Congratulations! You have successfully won the ${product.auctionType.toLowerCase()} auction for "${product.title}" through an INSTANT PURCHASE!
-
-🏆 INSTANT PURCHASE DETAILS:
-- Item: ${product.title}
-- Auction Type: ${product.auctionType}
-- Your Winning Bid: $${winningBid.price}
-- Instant Purchase Price: $${product.instantPurchasePrice}
-- Purchase Time: ${new Date().toLocaleString()}
-
-✨ What happens next:
-1. You will be contacted by the seller for payment arrangements
-2. Please complete payment within 48 hours
-3. Shipping details will be provided after payment confirmation
-4. Your account has been charged for the winning amount
-
-This was an instant purchase victory - your bid met or exceeded the instant purchase price, automatically ending the auction in your favor!
-
-Thank you for participating in Horn of Antiques!
-
-Best regards,
-Horn of Antiques Team
-      `,
-    });
-  } catch (error) {
-    console.error('Error sending instant purchase winner email:', error);
-  }
+  console.log('📧 Email disabled - would notify instant purchase winner:', {
+    winner: winner.email,
+    product: product.title,
+    price: winningBid.price
+  });
 };
 
 const sendInstantPurchaseSellerEmail = async (product, winningBid, winner) => {
-  try {
-    await sendEmail({
-      email: product.user.email,
-      subject: `💰 Instant Purchase! Your auction for "${product.title}" sold immediately!`,
-      text: `
-Dear ${product.user.name},
-
-Great news! Your ${product.auctionType.toLowerCase()} auction for "${product.title}" has ended with an INSTANT PURCHASE!
-
-💰 INSTANT PURCHASE DETAILS:
-- Item: ${product.title}
-- Auction Type: ${product.auctionType}
-- Final Price: $${winningBid.price}
-- Instant Purchase Price: $${product.instantPurchasePrice}
-- Winner: ${winner.name} (${winner.email})
-- Sale Time: ${new Date().toLocaleString()}
-
-🎯 This sale happened because a bidder placed a bid that met or exceeded your instant purchase price, automatically ending the auction.
-
-📋 Next Steps:
-1. Contact the winner at ${winner.email} for payment arrangements
-2. Arrange shipping after payment confirmation
-3. Update the auction status once the item is shipped
-4. Payment will be processed and transferred to your account
-
-Congratulations on your successful sale!
-
-Best regards,
-Horn of Antiques Team
-      `,
-    });
-  } catch (error) {
-    console.error('Error sending instant purchase seller email:', error);
-  }
+  console.log('📧 Email disabled - would notify seller of instant purchase:', {
+    seller: product.user.email,
+    product: product.title,
+    price: winningBid.price,
+    winner: winner.email
+  });
 };
 
 const sendInstantPurchaseLoserEmails = async (auctionId, winningBidId) => {
@@ -167,34 +105,12 @@ const sendInstantPurchaseLoserEmails = async (auctionId, winningBidId) => {
       _id: { $ne: winningBidId }
     }).populate('user', 'name email').populate('product', 'title auctionType instantPurchasePrice');
 
-    for (const bid of losingBids) {
-      await sendEmail({
-        email: bid.user.email,
-        subject: `Auction ended: "${bid.product.title}" - Instant Purchase`,
-        text: `
-Dear ${bid.user.name},
-
-The ${bid.product.auctionType.toLowerCase()} auction for "${bid.product.title}" has ended due to an INSTANT PURCHASE by another bidder.
-
-📋 Auction Summary:
-- Your Bid: $${bid.price}
-- Instant Purchase Price: $${bid.product.instantPurchasePrice}
-- Auction Type: ${bid.product.auctionType}
-- End Reason: Another bidder triggered instant purchase
-
-💰 Your bid amount has been refunded to your account.
-
-Unfortunately, another bidder placed a bid that met or exceeded the instant purchase price, automatically ending the auction in their favor.
-
-Thank you for participating in Horn of Antiques! We hope you'll find other interesting items in our upcoming auctions.
-
-Best regards,
-Horn of Antiques Team
-        `,
-      });
-    }
+    console.log('📧 Email disabled - would notify losing bidders:', {
+      count: losingBids.length,
+      auction: auctionId
+    });
   } catch (error) {
-    console.error('Error sending instant purchase loser emails:', error);
+    console.error('Error processing losing bidders notification:', error);
   }
 };
 
@@ -805,11 +721,11 @@ const sellProduct = asyncHandler(async (req, res) => {
   // Save product
   await product.save();
 
-  // Send email notification to the highest bidder
-  await sendEmail({
-    email: highestBid.user.email,
-    subject: "Congratulations! You won the auction!",
-    text: `You have won the auction for "${product.title}" with a bid of $${highestBid.price}.`,
+  // Email notification disabled for simplified deployment
+  console.log('📧 Email disabled - would notify auction winner:', {
+    winner: highestBid.user.email,
+    product: product.title,
+    price: highestBid.price
   });
 
   res.status(200).json({ message: "Product has been successfully sold!" });

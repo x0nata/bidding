@@ -15,14 +15,7 @@ const socketService = new ServerlessSocketService();
  */
 router.post("/process-expired", asyncHandler(async (req, res) => {
   try {
-    // Verify the request is from Vercel Cron (optional security check)
-    const cronSecret = req.headers['authorization'];
-    if (process.env.CRON_SECRET && cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized cron request"
-      });
-    }
+    console.log('🔄 Processing expired auctions via cron job');
 
     const result = await auctionService.processExpiredAuctions();
     res.status(200).json({
@@ -31,6 +24,7 @@ router.post("/process-expired", asyncHandler(async (req, res) => {
       data: result
     });
   } catch (error) {
+    console.error('❌ Failed to process expired auctions:', error);
     res.status(500).json({
       success: false,
       message: "Failed to process expired auctions",

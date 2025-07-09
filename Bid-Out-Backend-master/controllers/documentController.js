@@ -282,27 +282,13 @@ const updateAuthenticityStatus = asyncHandler(async (req, res) => {
 
   await product.save();
 
-  // Send notification to product owner
+  // Email notification disabled for simplified deployment
   const owner = await User.findById(product.user);
   if (owner) {
-    await sendEmail({
-      email: owner.email,
-      subject: `Authenticity Status Updated - ${product.title}`,
-      text: `
-Dear ${owner.name},
-
-The authenticity status of your item "${product.title}" has been updated.
-
-New Status: ${status}
-Verified By: ${verifiedBy || req.user.name}
-Certificate Number: ${certificateNumber || productId}
-${notes ? `Notes: ${notes}` : ''}
-
-You can view the updated information in your account.
-
-Best regards,
-Antique Auction System Team
-      `,
+    console.log('📧 Email disabled - would notify product owner of authenticity update:', {
+      owner: owner.email,
+      product: product.title,
+      status: status
     });
   }
 

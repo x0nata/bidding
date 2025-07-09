@@ -199,34 +199,11 @@ class ServerlessAuctionService {
    * Notify auction winner
    */
   async notifyWinner(auction, winningBid) {
-    try {
-      await sendEmail({
-        email: winningBid.user.email,
-        subject: `Congratulations! You won the auction for "${auction.title}"`,
-        text: `
-Dear ${winningBid.user.name},
-
-Congratulations! You have won the auction for "${auction.title}" with a bid of $${winningBid.bidAmount}.
-
-Auction Details:
-- Item: ${auction.title}
-- Winning Bid: $${winningBid.bidAmount}
-- Auction End Time: ${auction.auctionEndDate}
-
-Next Steps:
-1. You will be contacted by the seller within 24 hours
-2. Payment and delivery arrangements will be coordinated
-3. Please check your account for further updates
-
-Thank you for participating in Horn of Antiques!
-
-Best regards,
-Horn of Antiques Team
-        `
-      });
-    } catch (error) {
-      console.error('Error notifying winner:', error);
-    }
+    console.log('📧 Email disabled - would notify auction winner:', {
+      winner: winningBid.user.email,
+      auction: auction.title,
+      price: winningBid.bidAmount
+    });
   }
 
   /**
@@ -241,24 +218,12 @@ Horn of Antiques Team
 
       const auction = await Product.findById(auctionId);
 
-      for (const bidder of otherBidders) {
-        await sendEmail({
-          email: bidder.email,
-          subject: `Auction ended: "${auction.title}"`,
-          text: `
-Dear ${bidder.name},
-
-The auction for "${auction.title}" has ended. Unfortunately, your bid was not the winning bid.
-
-Thank you for participating! We encourage you to browse our other auctions.
-
-Best regards,
-Horn of Antiques Team
-          `
-        });
-      }
+      console.log('📧 Email disabled - would notify other bidders:', {
+        count: otherBidders.length,
+        auction: auction.title
+      });
     } catch (error) {
-      console.error('Error notifying other bidders:', error);
+      console.error('Error processing other bidders notification:', error);
     }
   }
 }

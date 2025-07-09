@@ -236,6 +236,9 @@ class AuctionWinnerService {
     try {
       const reasonText = this.getReasonText(reason);
       
+      // Email functionality disabled for simplified deployment
+      console.log('📧 Email disabled - would notify winner:', winningBid.user.email);
+      /*
       await sendEmail({
         email: winningBid.user.email,
         subject: `Congratulations! You won the auction for "${auction.title}"`,
@@ -263,6 +266,7 @@ Best regards,
 Horn of Antiques Team
         `,
       });
+      */
     } catch (error) {
       console.error('Error notifying winner:', error);
     }
@@ -353,11 +357,8 @@ Horn of Antiques Team
           break;
       }
       
-      await sendEmail({
-        email: auction.user.email,
-        subject,
-        text,
-      });
+      // Email functionality disabled for simplified deployment
+      console.log('📧 Email disabled - would notify seller:', auction.user.email);
     } catch (error) {
       console.error('Error notifying seller:', error);
     }
@@ -376,9 +377,8 @@ Horn of Antiques Team
       const reasonText = this.getReasonText(reason);
 
       for (const bid of losingBids) {
-        await sendEmail({
-          email: bid.user.email,
-          subject: `Auction ended for "${bid.product.title}"`,
+        // Email functionality disabled for simplified deployment
+        console.log('📧 Email disabled - would notify losing bidder:', bid.user.email);
           text: `
 Dear ${bid.user.name},
 
@@ -432,11 +432,8 @@ Horn of Antiques Team
           `;
         }
         
-        await sendEmail({
-          email: bid.user.email,
-          subject,
-          text,
-        });
+        // Email functionality disabled for simplified deployment
+        console.log('📧 Email disabled - would notify bidder:', bid.user.email);
       }
     } catch (error) {
       console.error('Error notifying bidders:', error);

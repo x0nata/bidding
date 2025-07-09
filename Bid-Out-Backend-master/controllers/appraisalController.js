@@ -74,24 +74,11 @@ const createAppraisal = asyncHandler(async (req, res) => {
     .populate('expert', 'name email')
     .populate('requestedBy', 'name email');
 
-  // Send notification to expert
-  await sendEmail({
-    email: expert.email,
-    subject: `New Appraisal Request - ${product.title}`,
-    text: `
-Dear ${expert.name},
-
-You have received a new appraisal request for "${product.title}".
-
-Appraisal Type: ${appraisalType}
-Requested by: ${req.user.name}
-Product ID: ${productId}
-
-Please log in to the Antique Auction System to review and accept this request.
-
-Best regards,
-Antique Auction System Team
-    `,
+  // Email notification disabled for simplified deployment
+  console.log('📧 Email disabled - would notify expert of new appraisal request:', {
+    expert: expert.email,
+    product: product.title,
+    requester: req.user.name
   });
 
   res.status(201).json(populatedAppraisal);
@@ -271,26 +258,12 @@ const updateAppraisal = asyncHandler(async (req, res) => {
       'authenticity.certificateNumber': appraisal._id.toString()
     });
 
-    // Send notification to product owner
+    // Email notification disabled for simplified deployment
     const productOwner = await User.findById(appraisal.requestedBy._id);
-    await sendEmail({
-      email: productOwner.email,
-      subject: `Appraisal Completed - ${appraisal.product.title}`,
-      text: `
-Dear ${productOwner.name},
-
-Your appraisal for "${appraisal.product.title}" has been completed.
-
-Appraisal Results:
-- Authenticity: ${authenticity.isAuthentic ? 'Verified as Authentic' : 'Authenticity Disputed'}
-- Estimated Value: $${estimatedValue?.amount || 'Not specified'}
-- Expert: ${req.user.name}
-
-You can view the full appraisal report in your account.
-
-Best regards,
-Antique Auction System Team
-      `,
+    console.log('📧 Email disabled - would notify product owner of completed appraisal:', {
+      owner: productOwner.email,
+      product: appraisal.product.title,
+      expert: req.user.name
     });
   }
 
@@ -335,21 +308,12 @@ const acceptAppraisal = asyncHandler(async (req, res) => {
   appraisal.status = 'In Progress';
   await appraisal.save();
 
-  // Notify the requester
+  // Email notification disabled for simplified deployment
   const requester = await User.findById(appraisal.requestedBy);
-  await sendEmail({
-    email: requester.email,
-    subject: `Appraisal Accepted - ${appraisal.product.title}`,
-    text: `
-Dear ${requester.name},
-
-Your appraisal request has been accepted by ${req.user.name}.
-
-The expert will begin working on your appraisal and will provide updates as the process progresses.
-
-Best regards,
-Antique Auction System Team
-    `,
+  console.log('📧 Email disabled - would notify requester of accepted appraisal:', {
+    requester: requester.email,
+    product: appraisal.product.title,
+    expert: req.user.name
   });
 
   res.status(200).json({ message: "Appraisal accepted successfully", appraisal });

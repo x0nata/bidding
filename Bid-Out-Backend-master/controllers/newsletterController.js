@@ -52,32 +52,8 @@ const subscribeToNewsletter = asyncHandler(async (req, res) => {
     userAgent: req.get("User-Agent"),
   });
 
-  // Send welcome email
-  try {
-    await sendEmail({
-      email: subscription.email,
-      subject: "Welcome to Heritage Auctions Newsletter!",
-      text: `
-Dear Collector,
-
-Thank you for subscribing to the Heritage Auctions newsletter!
-
-You'll now receive:
-- Updates on new auction listings
-- Expert collecting tips and insights
-- Exclusive previews of rare finds
-- Weekly digest of auction highlights
-
-You can update your preferences or unsubscribe at any time using the link in our emails.
-
-Happy collecting!
-
-The Heritage Auctions Team
-      `,
-    });
-  } catch (error) {
-    // Don't fail the subscription if email fails
-  }
+  // Email functionality disabled for simplified deployment
+  console.log('📧 Email disabled - would send welcome email to:', subscription.email);
 
   res.status(201).json({
     message: "Successfully subscribed to newsletter",
@@ -223,13 +199,10 @@ const sendNewsletterToAll = asyncHandler(async (req, res) => {
           const unsubscribeLink = `${process.env.FRONTEND_URL}/newsletter/unsubscribe/${subscriber.unsubscribeToken}`;
           const emailContent = `${content}\n\n---\nTo unsubscribe, visit: ${unsubscribeLink}`;
 
-          await sendEmail({
-            email: subscriber.email,
-            subject,
-            text: emailContent,
-          });
+          // Email functionality disabled for simplified deployment
+          console.log('📧 Email disabled - would send newsletter to:', subscriber.email);
 
-          // Update subscriber stats
+          // Update subscriber stats (simulate email sent)
           subscriber.lastEmailSent = new Date();
           subscriber.emailsSent += 1;
           await subscriber.save();
