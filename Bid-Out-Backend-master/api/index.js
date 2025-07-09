@@ -62,6 +62,8 @@ let cachedConnection = null;
 
 const connectDB = async () => {
   try {
+    console.log('🔄 connectDB() called - checking connection state...');
+
     // Use cached connection if available and connected
     if (cachedConnection && mongoose.connection.readyState === 1) {
       console.log('🔄 Using cached MongoDB connection');
@@ -69,6 +71,9 @@ const connectDB = async () => {
     }
 
     const mongoURI = process.env.MONGO_URI || process.env.DATABASE_CLOUD;
+    console.log('🔄 Environment check - MONGO_URI exists:', !!process.env.MONGO_URI);
+    console.log('🔄 Environment check - DATABASE_CLOUD exists:', !!process.env.DATABASE_CLOUD);
+    console.log('🔄 All env vars containing MONGO:', Object.keys(process.env).filter(key => key.includes('MONGO')));
 
     if (!mongoURI) {
       console.error('❌ No MongoDB connection string found');
@@ -78,6 +83,7 @@ const connectDB = async () => {
 
     console.log('🔄 Establishing new MongoDB connection...');
     console.log('🔗 Connection URI format:', mongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
+    console.log('🔄 Current mongoose connection state:', mongoose.connection.readyState);
 
     // Close existing connection if in bad state
     if (mongoose.connection.readyState === 2 || mongoose.connection.readyState === 3) {
@@ -112,6 +118,7 @@ const connectDB = async () => {
     console.log('✅ MongoDB Atlas connected successfully');
     console.log(`📍 Connected to: ${conn.connection.host}`);
     console.log(`🗄️  Database: ${conn.connection.name}`);
+    console.log(`🔌 Final connection state: ${conn.connection.readyState}`);
 
     cachedConnection = conn;
     return conn;
@@ -120,7 +127,8 @@ const connectDB = async () => {
     console.error('❌ Error details:', {
       name: error.name,
       code: error.code,
-      codeName: error.codeName
+      codeName: error.codeName,
+      stack: error.stack
     });
 
     // ADDED: More detailed error logging for debugging
@@ -131,6 +139,16 @@ const connectDB = async () => {
       console.error('  3. Database user credentials are incorrect');
       console.error('  4. Connection string format is invalid');
       console.error('  5. Network connectivity issues from Vercel to MongoDB Atlas');
+    }
+
+    if (error.name === 'MongoParseError') {
+      console.error('🔧 MongoDB Parse Error - Connection string format issue');
+      console.error('  Check your MONGO_URI format and parameters');
+    }
+
+    if (error.name === 'MongoNetworkError') {
+      console.error('🔧 MongoDB Network Error - Connectivity issue');
+      console.error('  Check network access and firewall settings');
     }
 
     cachedConnection = null;
@@ -215,8 +233,16 @@ app.get("/", async (req, res) => {
 // Health check endpoint with connection attempt
 app.get("/health", async (req, res) => {
   try {
+    console.log('🔄 Health check - attempting database connection...');
+
+    // Check environment variables first
+    const mongoURI = process.env.MONGO_URI || process.env.DATABASE_CLOUD;
+    console.log('🔗 MongoDB URI available:', !!mongoURI);
+    console.log('🔗 URI format:', mongoURI ? mongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@') : 'NOT_FOUND');
+
     // Force connection attempt for health check
-    await connectDB();
+    const connection = await connectDB();
+    console.log('🔄 Connection attempt result:', !!connection);
 
     const dbState = mongoose.connection.readyState;
     const dbStates = {
@@ -225,6 +251,8 @@ app.get("/health", async (req, res) => {
       2: 'connecting',
       3: 'disconnecting'
     };
+
+    console.log('🔄 Final database state:', dbStates[dbState], 'readyState:', dbState);
 
     res.json({
       status: dbState === 1 ? "healthy" : "degraded",
@@ -237,7 +265,11 @@ app.get("/health", async (req, res) => {
       },
       environment: process.env.NODE_ENV || 'development',
       timestamp: new Date().toISOString(),
-      version: "1.0.0"
+      version: "1.0.0",
+      debug: {
+        mongoUriAvailable: !!mongoURI,
+        connectionAttempted: !!connection
+      }
     });
   } catch (error) {
     console.error('❌ Health check error:', error);
@@ -246,13 +278,41 @@ app.get("/health", async (req, res) => {
       database: {
         state: "error",
         connected: false,
-        error: error.message
+        error: error.message,
+        errorName: error.name
       },
       environment: process.env.NODE_ENV || 'development',
       timestamp: new Date().toISOString(),
       version: "1.0.0"
     });
   }
+});
+
+// Debug endpoint to check environment variables (remove after debugging)
+app.get("/debug/env", (req, res) => {
+  const mongoVars = Object.keys(process.env).filter(key =>
+    key.includes('MONGO') || key.includes('DATABASE') || key === 'NODE_ENV'
+  );
+
+  const envInfo = {};
+  mongoVars.forEach(key => {
+    if (key.includes('MONGO') || key.includes('DATABASE')) {
+      // Mask sensitive connection strings
+      envInfo[key] = process.env[key] ?
+        process.env[key].replace(/\/\/[^:]+:[^@]+@/, '//***:***@') :
+        'NOT_SET';
+    } else {
+      envInfo[key] = process.env[key] || 'NOT_SET';
+    }
+  });
+
+  res.json({
+    message: "Environment Variables Debug",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    mongoVariables: envInfo,
+    totalEnvVars: Object.keys(process.env).length
+  });
 });
 
 // API Routes with database connection middleware
