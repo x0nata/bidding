@@ -101,6 +101,9 @@ const connectDB = async () => {
       console.log('🔄 Environment check - MONGO_URI exists:', !!process.env.MONGO_URI);
       console.log('🔄 Environment check - DATABASE_CLOUD exists:', !!process.env.DATABASE_CLOUD);
 
+      // Store for error logging
+      let cleanMongoURI = null;
+
       if (!mongoURI) {
         console.error('❌ No MongoDB connection string found');
         console.error('Available env vars:', Object.keys(process.env).filter(key => key.includes('MONGO')));
@@ -111,6 +114,9 @@ const connectDB = async () => {
       console.log('🔗 Connection URI format:', mongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
       console.log('🔗 URI length:', mongoURI.length);
       console.log('🔗 URI parameters:', mongoURI.includes('?') ? mongoURI.split('?')[1] : 'none');
+      console.log('🔗 URI raw (first 100 chars):', JSON.stringify(mongoURI.substring(0, 100)));
+      console.log('🔗 URI contains maxPoolSize:', mongoURI.includes('maxPoolSize'));
+      console.log('🔗 URI contains serverSelectionTimeoutMS:', mongoURI.includes('serverSelectionTimeoutMS'));
 
       // Test URI parsing before attempting connection
       try {
@@ -132,19 +138,17 @@ const connectDB = async () => {
 
       console.log('🔄 Attempting mongoose.connect...');
 
-      // FIXED: Clean connection string without conflicting parameters
-      // Remove parameters that will be set in options to avoid conflicts
-      let cleanMongoURI = mongoURI;
+      // FIXED: Always use clean connection string approach (same as successful test endpoint)
+      // This ensures consistency with the working test endpoint logic
+      console.log('🔧 Creating clean connection string (same approach as test endpoint)...');
 
-      // If URI contains parameters that conflict with our options, use a clean version
-      if (mongoURI.includes('maxPoolSize') || mongoURI.includes('serverSelectionTimeoutMS')) {
-        console.log('🔧 Detected parameter conflicts in URI, using clean connection string...');
-        // Extract base URI without conflicting parameters
-        const baseURI = mongoURI.split('?')[0];
-        // Keep only essential parameters that don't conflict
-        cleanMongoURI = `${baseURI}?retryWrites=true&w=majority`;
-        console.log('🔧 Clean URI format: mongodb+srv://***:***@host/database?retryWrites=true&w=majority');
-      }
+      // Extract base URI and always create clean version
+      const baseURI = mongoURI.split('?')[0];
+      cleanMongoURI = `${baseURI}?retryWrites=true&w=majority`;
+
+      console.log('🔧 Original URI:', mongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
+      console.log('🔧 Clean URI:', cleanMongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
+      console.log('🔧 Using same cleaning logic as successful test endpoint');
 
       // FIXED: Serverless-optimized connection options (no conflicts with URI)
       const conn = await mongoose.connect(cleanMongoURI, {
@@ -207,6 +211,9 @@ const connectDB = async () => {
     if (error.name === 'MongoParseError') {
       console.error('🔧 MongoDB Parse Error - Connection string format issue');
       console.error('  Check your MONGO_URI format and parameters');
+      console.error('  Original URI:', mongoURI ? mongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@') : 'NOT_FOUND');
+      console.error('  Clean URI used:', cleanMongoURI ? cleanMongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@') : 'NOT_CREATED');
+      console.error('  Error details:', error.message);
     }
 
     if (error.name === 'MongoNetworkError') {
