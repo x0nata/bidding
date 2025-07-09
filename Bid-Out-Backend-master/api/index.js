@@ -131,12 +131,27 @@ const connectDB = async () => {
       }
 
       console.log('🔄 Attempting mongoose.connect...');
-      // FIXED: Serverless-optimized connection options
-      const conn = await mongoose.connect(mongoURI, {
+
+      // FIXED: Clean connection string without conflicting parameters
+      // Remove parameters that will be set in options to avoid conflicts
+      let cleanMongoURI = mongoURI;
+
+      // If URI contains parameters that conflict with our options, use a clean version
+      if (mongoURI.includes('maxPoolSize') || mongoURI.includes('serverSelectionTimeoutMS')) {
+        console.log('🔧 Detected parameter conflicts in URI, using clean connection string...');
+        // Extract base URI without conflicting parameters
+        const baseURI = mongoURI.split('?')[0];
+        // Keep only essential parameters that don't conflict
+        cleanMongoURI = `${baseURI}?retryWrites=true&w=majority`;
+        console.log('🔧 Clean URI format: mongodb+srv://***:***@host/database?retryWrites=true&w=majority');
+      }
+
+      // FIXED: Serverless-optimized connection options (no conflicts with URI)
+      const conn = await mongoose.connect(cleanMongoURI, {
         // Balanced timeouts for serverless environment
-        serverSelectionTimeoutMS: 15000, // 15 seconds (faster than 30s)
-        connectTimeoutMS: 15000,          // 15 seconds (faster than 30s)
-        socketTimeoutMS: 30000,           // 30 seconds for operations
+        serverSelectionTimeoutMS: 30000, // 30 seconds for Vercel cold starts
+        connectTimeoutMS: 30000,          // 30 seconds for initial connection
+        socketTimeoutMS: 45000,           // 45 seconds for operations
 
         // Serverless-optimized pool settings
         maxPoolSize: 1,                   // Single connection for serverless
@@ -144,9 +159,8 @@ const connectDB = async () => {
         maxIdleTimeMS: 60000,             // Keep connection alive longer
 
         // Essential options for serverless
-        bufferCommands: false,            // Fail fast if not connected
-        bufferMaxEntries: 0,              // No buffering
-        retryWrites: true,
+        bufferCommands: true,             // Enable buffering for better reliability
+        bufferMaxEntries: 0,              // No buffer limit
 
         // Network optimization
         family: 4,                        // Force IPv4
@@ -432,7 +446,23 @@ async function testConnectionString(name, uri) {
     // Test URL parsing
     const url = new URL(uri);
 
-    // Test mongoose connection (but don't actually connect)
+    // Test mongoose connection validation (without actually connecting)
+    let mongooseValidation = "UNKNOWN";
+    let cleanURI = uri;
+
+    try {
+      // Clean URI if it has conflicting parameters
+      if (uri.includes('maxPoolSize') || uri.includes('serverSelectionTimeoutMS')) {
+        const baseURI = uri.split('?')[0];
+        cleanURI = `${baseURI}?retryWrites=true&w=majority`;
+        mongooseValidation = "CLEANED_FOR_MONGOOSE";
+      } else {
+        mongooseValidation = "MONGOOSE_COMPATIBLE";
+      }
+    } catch (mongooseError) {
+      mongooseValidation = `MONGOOSE_ERROR: ${mongooseError.message}`;
+    }
+
     const testResult = {
       name,
       status: "PARSE_SUCCESS",
@@ -441,7 +471,9 @@ async function testConnectionString(name, uri) {
       hostname: url.hostname,
       database: url.pathname.substring(1),
       parameterCount: uri.includes('?') ? uri.split('?')[1].split('&').length : 0,
-      parameters: uri.includes('?') ? Object.fromEntries(new URLSearchParams(uri.split('?')[1])) : {}
+      parameters: uri.includes('?') ? Object.fromEntries(new URLSearchParams(uri.split('?')[1])) : {},
+      mongooseValidation,
+      cleanURI: cleanURI !== uri ? cleanURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@') : "SAME_AS_ORIGINAL"
     };
 
     return testResult;
@@ -450,6 +482,92 @@ async function testConnectionString(name, uri) {
       name,
       status: "PARSE_FAILED",
       error: error.message,
+      uri: uri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')
+    };
+  }
+}
+
+// Real mongoose connection test endpoint
+app.get("/debug/mongoose-test", async (req, res) => {
+  const results = [];
+
+  // Test 1: Clean basic URI
+  const basicURI = "mongodb+srv://bid:wasd1234@bid.cfyzacu.mongodb.net/bidding_site?retryWrites=true&w=majority";
+  results.push(await testMongooseConnection("Clean Basic URI", basicURI));
+
+  // Test 2: Current environment URI (cleaned)
+  const envURI = process.env.MONGO_URI || process.env.DATABASE_CLOUD;
+  if (envURI) {
+    const baseURI = envURI.split('?')[0];
+    const cleanEnvURI = `${baseURI}?retryWrites=true&w=majority`;
+    results.push(await testMongooseConnection("Cleaned Environment URI", cleanEnvURI));
+  }
+
+  res.json({
+    message: "Mongoose Connection Testing",
+    timestamp: new Date().toISOString(),
+    tests: results,
+    note: "These tests create temporary connections that are immediately closed"
+  });
+});
+
+async function testMongooseConnection(name, uri) {
+  if (!uri) {
+    return { name, status: "SKIPPED", reason: "URI not provided" };
+  }
+
+  const startTime = Date.now();
+  let testConnection = null;
+
+  try {
+    // Create a new mongoose connection for testing
+    testConnection = mongoose.createConnection();
+
+    // Set a shorter timeout for testing
+    const testOptions = {
+      serverSelectionTimeoutMS: 10000, // 10 seconds for testing
+      connectTimeoutMS: 10000,
+      socketTimeoutMS: 15000,
+      maxPoolSize: 1,
+      bufferCommands: false,
+      family: 4
+    };
+
+    await testConnection.openUri(uri, testOptions);
+
+    const duration = Date.now() - startTime;
+    const result = {
+      name,
+      status: "CONNECTION_SUCCESS",
+      duration: `${duration}ms`,
+      host: testConnection.host,
+      database: testConnection.name,
+      readyState: testConnection.readyState
+    };
+
+    // Close the test connection
+    await testConnection.close();
+
+    return result;
+
+  } catch (error) {
+    const duration = Date.now() - startTime;
+
+    // Close connection if it was created
+    if (testConnection) {
+      try {
+        await testConnection.close();
+      } catch (closeError) {
+        // Ignore close errors
+      }
+    }
+
+    return {
+      name,
+      status: "CONNECTION_FAILED",
+      duration: `${duration}ms`,
+      error: error.name,
+      message: error.message,
       uri: uri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')
     };
   }
