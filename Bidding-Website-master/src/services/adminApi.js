@@ -208,9 +208,9 @@ export const adminAnalyticsApi = {
   getSystemStats: async () => {
     try {
       const [usersResponse, productsResponse, revenueResponse] = await Promise.all([
-        adminApi.get('/users/users'),  // Backend route is actually /users/users - let me check
-        adminApi.get('/product'),
-        adminApi.get('/users/estimate-income')
+        adminApi.get('/api/users/users'),  // Backend route is actually /users/users - let me check
+        adminApi.get('/api/product'),
+        adminApi.get('/api/users/estimate-income')
       ]);
 
       const users = usersResponse.data;

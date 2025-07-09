@@ -51,53 +51,53 @@ api.interceptors.response.use(
 export const apiEndpoints = {
   // Authentication
   auth: {
-    register: (data) => api.post('/users/register', data),
-    login: (data) => api.post('/users/login', data),
-    logout: () => api.get('/users/logout'),
-    checkAuth: () => api.get('/users/loggedin'),
-    getUser: () => api.get('/users/getuser'),
-    loginAsSeller: (data) => api.post('/users/seller', data),
-    updateProfile: (data) => api.put('/users/profile', data),
-    changePassword: (data) => api.put('/users/password', data),
+    register: (data) => api.post('/api/users/register', data),
+    login: (data) => api.post('/api/users/login', data),
+    logout: () => api.get('/api/users/logout'),
+    checkAuth: () => api.get('/api/users/loggedin'),
+    getUser: () => api.get('/api/users/getuser'),
+    loginAsSeller: (data) => api.post('/api/users/seller', data),
+    updateProfile: (data) => api.put('/api/users/profile', data),
+    changePassword: (data) => api.put('/api/users/password', data),
   },
 
   // Products
   products: {
-    getAll: (params) => api.get('/product', { params }),
-    getById: (id) => api.get(`/product/${id}`),
-    create: (data) => api.post('/product', data, {
+    getAll: (params) => api.get('/api/product', { params }),
+    getById: (id) => api.get(`/api/product/${id}`),
+    create: (data) => api.post('/api/product', data, {
       headers: { 'Content-Type': 'multipart/form-data' }
     }),
-    update: (id, data) => api.put(`/product/${id}`, data, {
+    update: (id, data) => api.put(`/api/product/${id}`, data, {
       headers: { 'Content-Type': 'multipart/form-data' }
     }),
-    delete: (id) => api.delete(`/product/${id}`),
-    getUserProducts: () => api.get('/product/user'),
-    getWonProducts: () => api.get('/product/won-products'),
-    getActiveAuctions: () => api.get('/product/auctions/active'),
-    getUpcomingAuctions: () => api.get('/product/auctions/upcoming'),
-    search: (query) => api.get(`/product/search?q=${encodeURIComponent(query)}`),
+    delete: (id) => api.delete(`/api/product/${id}`),
+    getUserProducts: () => api.get('/api/product/user'),
+    getWonProducts: () => api.get('/api/product/won-products'),
+    getActiveAuctions: () => api.get('/api/product/auctions/active'),
+    getUpcomingAuctions: () => api.get('/api/product/auctions/upcoming'),
+    search: (query) => api.get(`/api/product/search?q=${encodeURIComponent(query)}`),
   },
 
   // Categories
   categories: {
-    getAll: () => api.get('/category'),
-    getById: (id) => api.get(`/category/${id}`),
-    create: (data) => api.post('/category', data),
-    update: (id, data) => api.put(`/category/${id}`, data),
-    delete: (id) => api.delete(`/category/${id}`),
+    getAll: () => api.get('/api/category'),
+    getById: (id) => api.get(`/api/category/${id}`),
+    create: (data) => api.post('/api/category', data),
+    update: (id, data) => api.put(`/api/category/${id}`, data),
+    delete: (id) => api.delete(`/api/category/${id}`),
   },
 
   // Bidding
   bidding: {
-    placeBid: (data) => api.post('/bidding', data),
-    getBidsForProduct: (productId) => api.get(`/bidding/${productId}`),
-    getUserBids: () => api.get('/bidding/user/activity'),
-    setProxyBid: (data) => api.post('/bidding/proxy', data),
-    cancelProxyBid: (productId) => api.delete(`/bidding/proxy/${productId}`),
-    getBidHistory: (productId) => api.get(`/bidding/${productId}`),
-    getTotalActiveBidsCount: () => api.get('/bidding/stats/active-bids-count'),
-    submitDeliveryInfo: (productId, data) => api.post(`/auctions/${productId}/delivery-info`, data),
+    placeBid: (data) => api.post('/api/bidding', data),
+    getBidsForProduct: (productId) => api.get(`/api/bidding/${productId}`),
+    getUserBids: () => api.get('/api/bidding/user/activity'),
+    setProxyBid: (data) => api.post('/api/bidding/proxy', data),
+    cancelProxyBid: (productId) => api.delete(`/api/bidding/proxy/${productId}`),
+    getBidHistory: (productId) => api.get(`/api/bidding/${productId}`),
+    getTotalActiveBidsCount: () => api.get('/api/bidding/stats/active-bids-count'),
+    submitDeliveryInfo: (productId, data) => api.post(`/api/auctions/${productId}/delivery-info`, data),
   },
 
   // Auctions

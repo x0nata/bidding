@@ -33,7 +33,7 @@ export const fetchWithErrorHandling = async (url, options = {}) => {
 // Generic data fetchers
 export const fetchCategories = async () => {
   try {
-    return await fetchWithErrorHandling(`${API_BASE_URL}/category/hierarchy`);
+    return await fetchWithErrorHandling(`${API_BASE_URL}/api/category/hierarchy`);
   } catch (error) {
     toast.error('Failed to load categories');
     throw error;
@@ -51,7 +51,7 @@ export const fetchProducts = async (params = {}) => {
       }
     });
     
-    const url = `${API_BASE_URL}/product${queryParams.toString() ? `?${queryParams}` : ''}`;
+    const url = `${API_BASE_URL}/api/product${queryParams.toString() ? `?${queryParams}` : ''}`;
     return await fetchWithErrorHandling(url);
   } catch (error) {
     toast.error('Failed to load products');
@@ -280,11 +280,11 @@ export const searchProducts = async (query, filters = {}) => {
 // Authentication helpers
 export const loginUser = async (credentials) => {
   try {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/auth/login`, {
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/users/login`, {
       method: 'POST',
       body: JSON.stringify(credentials)
     });
-    
+
     toast.success('Login successful!');
     return { success: true, data: response };
   } catch (error) {

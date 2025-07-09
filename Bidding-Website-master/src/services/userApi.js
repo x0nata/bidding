@@ -7,7 +7,7 @@ axios.defaults.withCredentials = true;
 
 // Create axios instance for user API
 const userApi = axios.create({
-  baseURL: `${API_URL}/users`,
+  baseURL: `${API_URL}/api/users`,
   withCredentials: true,
 });
 
