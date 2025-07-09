@@ -57,7 +57,7 @@ app.use(
 // Configure DNS for better MongoDB Atlas connectivity
 dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1', '1.0.0.1']);
 
-// MongoDB Connection for Serverless - Optimized for Vercel
+// MongoDB Connection for Serverless - Fixed for Vercel
 let cachedConnection = null;
 
 const connectDB = async () => {
@@ -85,30 +85,28 @@ const connectDB = async () => {
       await mongoose.connection.close();
     }
 
-    // Optimized connection options for Vercel serverless
+    // FIXED: Optimized connection options for Vercel serverless
     const conn = await mongoose.connect(mongoURI, {
-      // Reduced timeouts for faster serverless startup
-      serverSelectionTimeoutMS: 5000,
-      connectTimeoutMS: 5000,
-      socketTimeoutMS: 30000,
+      // FIXED: Use longer timeouts that match your environment variables
+      serverSelectionTimeoutMS: 30000, // 30 seconds (was 5000)
+      connectTimeoutMS: 30000,          // 30 seconds (was 5000)
+      socketTimeoutMS: 45000,           // 45 seconds
 
-      // Serverless-optimized pool settings
-      maxPoolSize: 1,
-      minPoolSize: 0,
-      maxIdleTimeMS: 10000,
+      // FIXED: Serverless-optimized pool settings
+      maxPoolSize: 3,                   // Increased from 1
+      minPoolSize: 1,                   // Minimum 1 connection
+      maxIdleTimeMS: 30000,             // 30 seconds
 
-      // Essential options
-      bufferCommands: false, // Disable mongoose buffering for serverless
-      bufferMaxEntries: 0,   // Disable mongoose buffering
+      // FIXED: Enable buffering for better serverless compatibility
+      bufferCommands: true,             // Enable mongoose buffering (was false)
       retryWrites: true,
 
       // Network optimization
-      family: 4,
+      family: 4,                        // Force IPv4
       directConnection: false,
 
-      // Additional serverless optimizations
-      heartbeatFrequencyMS: 10000,
-      serverSelectionRetryDelayMS: 2000,
+      // FIXED: Additional serverless optimizations
+      heartbeatFrequencyMS: 30000,      // 30 seconds (was 10000)
     });
 
     console.log('✅ MongoDB Atlas connected successfully');
@@ -125,22 +123,51 @@ const connectDB = async () => {
       codeName: error.codeName
     });
 
+    // ADDED: More detailed error logging for debugging
+    if (error.name === 'MongoServerSelectionError') {
+      console.error('🔧 MongoDB Server Selection Error - Possible causes:');
+      console.error('  1. MongoDB Atlas cluster is paused or unavailable');
+      console.error('  2. IP whitelist does not include 0.0.0.0/0 for Vercel');
+      console.error('  3. Database user credentials are incorrect');
+      console.error('  4. Connection string format is invalid');
+      console.error('  5. Network connectivity issues from Vercel to MongoDB Atlas');
+    }
+
     cachedConnection = null;
     return null;
   }
 };
 
-// Database connection middleware for API routes
+// FIXED: Database connection middleware for API routes
 const ensureDBConnection = async (req, res, next) => {
   try {
+    // Check if database is connected
     if (mongoose.connection.readyState !== 1) {
       console.log('🔄 Database not connected, attempting connection...');
-      await connectDB();
+      const connection = await connectDB();
+
+      // If connection failed, return error instead of continuing
+      if (!connection || mongoose.connection.readyState !== 1) {
+        console.error('❌ Failed to establish database connection');
+        return res.status(503).json({
+          success: false,
+          message: 'Database connection unavailable',
+          error: 'SERVICE_UNAVAILABLE',
+          details: 'Unable to connect to MongoDB Atlas. Please try again later.'
+        });
+      }
     }
+
+    // Connection successful, proceed to route
     next();
   } catch (error) {
     console.error('❌ Database connection middleware error:', error);
-    next(); // Continue anyway, let individual routes handle DB errors
+    return res.status(503).json({
+      success: false,
+      message: 'Database connection error',
+      error: 'CONNECTION_FAILED',
+      details: error.message
+    });
   }
 };
 
