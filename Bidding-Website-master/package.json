@@ -25,10 +25,7 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "build:original": "react-scripts build",
     "eject": "react-scripts eject",
-    "dev": "react-router dev",
-    "build:router": "react-router build",
     "vercel-build": "npm run build",
     "preview": "npm run build && npx serve -s build",
     "test": "craco test --watchAll=false",
@@ -53,7 +50,6 @@
   },
   "devDependencies": {
     "@craco/craco": "^7.1.0",
-    "@react-router/dev": "^7.6.3",
     "autoprefixer": "^10.4.21",
     "tailwindcss": "^3.3.3"
   }

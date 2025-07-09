@@ -205,8 +205,7 @@
   flex: 1 1;
 }
 .Toastify__toast-icon {
-  -webkit-margin-end: 10px;
-          margin-inline-end: 10px;
+  margin-inline-end: 10px;
   width: 20px;
   flex-shrink: 0;
   display: flex;
@@ -1240,7 +1239,6 @@ video {
   position: relative;
 }
 .sticky{
-  position: -webkit-sticky;
   position: sticky;
 }
 .inset-0{
@@ -1468,8 +1466,7 @@ video {
   margin-bottom: 2rem;
 }
 .me-2{
-  -webkit-margin-end: 0.5rem;
-          margin-inline-end: 0.5rem;
+  margin-inline-end: 0.5rem;
 }
 .ml-1{
   margin-left: 0.25rem;
@@ -1652,7 +1649,6 @@ video {
   height: 70vh;
 }
 .h-fit{
-  height: -webkit-fit-content;
   height: fit-content;
 }
 .h-full{
@@ -3418,8 +3414,7 @@ video {
   --tw-text-opacity: 0.9;
 }
 .underline{
-  -webkit-text-decoration-line: underline;
-          text-decoration-line: underline;
+  text-decoration-line: underline;
 }
 .placeholder-gray-500::placeholder{
   --tw-placeholder-opacity: 1;
@@ -3518,9 +3513,9 @@ video {
   backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
 }
 .transition{
-  transition-property: color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
@@ -3530,9 +3525,7 @@ video {
   transition-duration: 150ms;
 }
 .transition-colors{
-  transition-property: color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
@@ -4331,8 +4324,7 @@ body {
 }
 
 .hover\:underline:hover{
-  -webkit-text-decoration-line: underline;
-          text-decoration-line: underline;
+  text-decoration-line: underline;
 }
 
 .hover\:opacity-100:hover{
@@ -4539,8 +4531,7 @@ body {
 }
 
 .group:hover .group-hover\:underline{
-  -webkit-text-decoration-line: underline;
-          text-decoration-line: underline;
+  text-decoration-line: underline;
 }
 
 @media (min-width: 640px){
