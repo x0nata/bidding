@@ -183,5 +183,5 @@ app.use("*", (req, res) => {
   });
 });
 
-// Export for Vercel
+// Export for Vercel serverless functions
 module.exports = app;
