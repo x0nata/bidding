@@ -24,8 +24,10 @@
   "scripts": {
     "start": "craco start",
     "build": "CI=false craco build",
+    "build:fallback": "CI=false react-scripts build",
     "eject": "react-scripts eject",
     "vercel-build": "npm run build",
+    "vercel-build:fallback": "npm run build:fallback",
     "preview": "npm run build && npx serve -s build",
     "test": "craco test --watchAll=false",
     "test:watch": "craco test"

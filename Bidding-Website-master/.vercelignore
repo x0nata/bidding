@@ -25,14 +25,5 @@ yarn-error.log*
 ehthumbs.db
 Thumbs.db
 
-# Source files (not needed for static build)
-src/
-public/
-
-# Development files
-craco.config.js
-tailwind.config.js
-postcss.config.js
-
 # Documentation
 README.md
