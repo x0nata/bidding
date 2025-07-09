@@ -613,9 +613,135 @@ app.get("/debug", (req, res) => {
     availableEndpoints: [
       "/debug/env",
       "/debug/connection-test",
-      "/debug/mongoose-test"
+      "/debug/mongoose-test",
+      "/debug/auth",
+      "/debug/cors"
     ]
   });
+});
+
+// Authentication debug endpoint
+app.get("/debug/auth", (req, res) => {
+  res.json({
+    message: "Authentication Debug Information",
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      register: "POST /api/users/register",
+      login: "POST /api/users/login",
+      logout: "GET /api/users/logout",
+      checkAuth: "GET /api/users/loggedin",
+      getUser: "GET /api/users/getuser"
+    },
+    testCredentials: {
+      admin: {
+        email: "admin@gmail.com",
+        password: "Admin@123",
+        note: "Hardcoded admin account for testing"
+      }
+    },
+    headers: {
+      received: req.headers,
+      origin: req.get('origin'),
+      userAgent: req.get('user-agent')
+    },
+    cookies: req.cookies
+  });
+});
+
+// CORS debug endpoint
+app.get("/debug/cors", (req, res) => {
+  const origin = req.get('origin');
+  const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    'https://bidding-sandy.vercel.app',
+    'https://bidding-3yga80dqn-x0natas-projects.vercel.app',
+    'http://localhost:3000'
+  ].filter(Boolean);
+
+  res.json({
+    message: "CORS Configuration Debug",
+    timestamp: new Date().toISOString(),
+    request: {
+      origin: origin,
+      method: req.method,
+      headers: {
+        origin: req.get('origin'),
+        referer: req.get('referer'),
+        userAgent: req.get('user-agent')
+      }
+    },
+    corsConfig: {
+      allowedOrigins: allowedOrigins,
+      originAllowed: allowedOrigins.includes(origin),
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "x-auth-token"]
+    },
+    environment: {
+      FRONTEND_URL: process.env.FRONTEND_URL || 'NOT_SET',
+      NODE_ENV: process.env.NODE_ENV || 'NOT_SET'
+    }
+  });
+});
+
+// Test authentication endpoint
+app.post("/debug/test-login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    console.log('🔄 Test login attempt:', { email, passwordProvided: !!password });
+    console.log('🔄 Request headers:', req.headers);
+    console.log('🔄 Request origin:', req.get('origin'));
+
+    // Test with hardcoded admin credentials
+    if (email === "admin@gmail.com" && password === "Admin@123") {
+      const testToken = "test_token_12345";
+
+      // Set cookie
+      const isProduction = process.env.NODE_ENV === 'production';
+      res.cookie("token", testToken, {
+        path: "/",
+        httpOnly: true,
+        expires: new Date(Date.now() + 1000 * 86400), // 1 day
+        sameSite: isProduction ? "none" : "lax",
+        secure: isProduction,
+      });
+
+      console.log('✅ Test login successful');
+
+      return res.status(200).json({
+        success: true,
+        message: "Test login successful",
+        user: {
+          _id: "test_admin_id",
+          name: "Test Admin",
+          email: "admin@gmail.com",
+          role: "admin"
+        },
+        token: testToken,
+        cookieSet: true,
+        environment: process.env.NODE_ENV
+      });
+    }
+
+    console.log('❌ Test login failed - invalid credentials');
+    res.status(400).json({
+      success: false,
+      message: "Invalid test credentials",
+      expectedCredentials: {
+        email: "admin@gmail.com",
+        password: "Admin@123"
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Test login error:', error);
+    res.status(500).json({
+      success: false,
+      message: "Test login error",
+      error: error.message
+    });
+  }
 });
 
 // API Routes with database connection middleware

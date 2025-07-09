@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002/api';
+// ✅ FIXED: Remove /api suffix since it's added in the endpoint URLs
+const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
 
 // Configure axios defaults
 axios.defaults.withCredentials = true;
@@ -104,10 +105,10 @@ export const checkAuthStatus = createAsyncThunk(
       }
 
       // First check if the token is valid
-      const statusResponse = await axios.get(`${API_URL}/users/loggedin`);
+      const statusResponse = await axios.get(`${API_URL}/api/users/loggedin`);
       if (statusResponse.data) {
         // If valid, get user data
-        const userResponse = await axios.get(`${API_URL}/users/getuser`);
+        const userResponse = await axios.get(`${API_URL}/api/users/getuser`);
         return userResponse.data;
       }
 
@@ -126,7 +127,7 @@ export const loginAsSeller = createAsyncThunk(
   'auth/loginAsSeller',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/users/seller`, userData);
+      const response = await axios.post(`${API_URL}/api/users/seller`, userData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Seller login failed');
@@ -138,7 +139,7 @@ export const updateUserProfile = createAsyncThunk(
   'auth/updateProfile',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${API_URL}/users/profile`, userData);
+      const response = await axios.put(`${API_URL}/api/users/profile`, userData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Profile update failed');
@@ -150,7 +151,7 @@ export const refreshUserData = createAsyncThunk(
   'auth/refreshUserData',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/users/getuser`);
+      const response = await axios.get(`${API_URL}/api/users/getuser`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to refresh user data');

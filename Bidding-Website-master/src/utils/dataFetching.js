@@ -295,7 +295,7 @@ export const loginUser = async (credentials) => {
 
 export const registerUser = async (userData) => {
   try {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/auth/register`, {
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/users/register`, {
       method: 'POST',
       body: JSON.stringify(userData)
     });
@@ -310,7 +310,7 @@ export const registerUser = async (userData) => {
 
 export const logoutUser = async () => {
   try {
-    await fetchWithErrorHandling(`${API_BASE_URL}/auth/logout`, {
+    await fetchWithErrorHandling(`${API_BASE_URL}/api/users/logout`, {
       method: 'POST'
     });
     
