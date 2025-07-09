@@ -61,6 +61,10 @@ dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1', '1.0.0.1']);
 let isConnecting = false;
 
 const connectDB = async () => {
+  // Declare variables at function scope for error handling access
+  let mongoURI = null;
+  let cleanMongoURI = null;
+
   try {
     console.log('🔄 connectDB() called - checking connection state...');
     console.log('🔄 Current mongoose readyState:', mongoose.connection.readyState);
@@ -97,12 +101,9 @@ const connectDB = async () => {
       console.log('🔄 Establishing new MongoDB connection...');
       isConnecting = true;
 
-      const mongoURI = process.env.MONGO_URI || process.env.DATABASE_CLOUD;
+      mongoURI = process.env.MONGO_URI || process.env.DATABASE_CLOUD;
       console.log('🔄 Environment check - MONGO_URI exists:', !!process.env.MONGO_URI);
       console.log('🔄 Environment check - DATABASE_CLOUD exists:', !!process.env.DATABASE_CLOUD);
-
-      // Store for error logging
-      let cleanMongoURI = null;
 
       if (!mongoURI) {
         console.error('❌ No MongoDB connection string found');
@@ -216,9 +217,24 @@ const connectDB = async () => {
       console.error('  Error details:', error.message);
     }
 
+    if (error.name === 'ReferenceError') {
+      console.error('🔧 Reference Error - Variable scope issue');
+      console.error('  Error message:', error.message);
+      console.error('  mongoURI available:', typeof mongoURI !== 'undefined');
+      console.error('  cleanMongoURI available:', typeof cleanMongoURI !== 'undefined');
+    }
+
     if (error.name === 'MongoNetworkError') {
       console.error('🔧 MongoDB Network Error - Connectivity issue');
       console.error('  Check network access and firewall settings');
+    }
+
+    // Additional debugging for ReferenceError
+    if (error.name === 'ReferenceError') {
+      console.error('🔧 Reference Error - Variable scope issue');
+      console.error('  Error message:', error.message);
+      console.error('  mongoURI available:', typeof mongoURI !== 'undefined');
+      console.error('  cleanMongoURI available:', typeof cleanMongoURI !== 'undefined');
     }
 
     return null;
@@ -579,6 +595,19 @@ async function testMongooseConnection(name, uri) {
     };
   }
 }
+
+// Simple debug endpoint for quick testing
+app.get("/debug", (req, res) => {
+  res.json({
+    message: "Debug endpoint working",
+    timestamp: new Date().toISOString(),
+    availableEndpoints: [
+      "/debug/env",
+      "/debug/connection-test",
+      "/debug/mongoose-test"
+    ]
+  });
+});
 
 // API Routes with database connection middleware
 app.use("/api/users", ensureDBConnection, userRoute);
