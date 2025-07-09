@@ -4,8 +4,7 @@
   "description": "Frontend React application for Horn of Antiques - Antique Auction for Ethiopia",
   "private": true,
   "engines": {
-    "node": ">=20.0.0",
-    "npm": ">=10.0.0"
+    "node": "18.x"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.3",
@@ -24,7 +23,7 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "craco build",
+    "build": "CI=false craco build",
     "eject": "react-scripts eject",
     "vercel-build": "npm run build",
     "preview": "npm run build && npx serve -s build",
