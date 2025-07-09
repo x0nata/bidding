@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "horn-of-antiques-backend",
   "rewrites": [
     {
       "source": "/(.*)",
@@ -9,17 +8,7 @@
   ],
   "functions": {
     "api/index.js": {
-      "maxDuration": 30,
-      "runtime": "nodejs20.x"
+      "maxDuration": 30
     }
-  },
-  "crons": [
-    {
-      "path": "/api/auction-management/process-expired",
-      "schedule": "*/5 * * * *"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
   }
 }

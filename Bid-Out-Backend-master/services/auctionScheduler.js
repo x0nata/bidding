@@ -1,4 +1,4 @@
-const schedule = require("node-schedule");
+// const schedule = require("node-schedule"); // Disabled for serverless deployment
 const Product = require("../model/productModel");
 const BiddingProduct = require("../model/biddingProductModel");
 const User = require("../model/userModel");
@@ -19,9 +19,9 @@ class AuctionScheduler {
     await this.scheduleExistingAuctions();
     
     // Run cleanup every hour to check for missed auctions
-    schedule.scheduleJob("0 * * * *", () => {
-      this.cleanupMissedAuctions();
-    });
+    // schedule.scheduleJob("0 * * * *", () => {
+    //   this.cleanupMissedAuctions();
+    // }); // Disabled for serverless deployment
     
   }
 
@@ -51,12 +51,13 @@ class AuctionScheduler {
     }
 
     // Schedule new job
-    const job = schedule.scheduleJob(endDate, async () => {
-      await this.endAuction(auctionId);
-      this.scheduledJobs.delete(auctionId.toString());
-    });
+    // const job = schedule.scheduleJob(endDate, async () => {
+    //   await this.endAuction(auctionId);
+    //   this.scheduledJobs.delete(auctionId.toString());
+    // }); // Disabled for serverless deployment
 
-    this.scheduledJobs.set(auctionId.toString(), job);
+    // this.scheduledJobs.set(auctionId.toString(), job);
+    console.log('📅 Scheduling disabled for serverless - use Vercel cron instead');
   }
 
   async endAuction(auctionId) {
