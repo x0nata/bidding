@@ -57,116 +57,187 @@ app.use(
 // Configure DNS for better MongoDB Atlas connectivity
 dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1', '1.0.0.1']);
 
-// MongoDB Connection for Serverless
-let isConnecting = false;
-let connectionPromise = null;
+// MongoDB Connection for Serverless - Optimized for Vercel
+let cachedConnection = null;
 
 const connectDB = async () => {
   try {
+    // Use cached connection if available and connected
+    if (cachedConnection && mongoose.connection.readyState === 1) {
+      console.log('🔄 Using cached MongoDB connection');
+      return cachedConnection;
+    }
+
     const mongoURI = process.env.MONGO_URI || process.env.DATABASE_CLOUD;
 
     if (!mongoURI) {
       console.error('❌ No MongoDB connection string found');
+      console.error('Available env vars:', Object.keys(process.env).filter(key => key.includes('MONGO')));
       return null;
     }
 
-    // Check if already connected
-    if (mongoose.connection.readyState === 1) {
-      return mongoose.connection;
+    console.log('🔄 Establishing new MongoDB connection...');
+    console.log('🔗 Connection URI format:', mongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
+
+    // Close existing connection if in bad state
+    if (mongoose.connection.readyState === 2 || mongoose.connection.readyState === 3) {
+      console.log('🔄 Closing existing connection in bad state');
+      await mongoose.connection.close();
     }
 
-    // Prevent multiple connection attempts
-    if (isConnecting) {
-      return connectionPromise;
-    }
-
-    isConnecting = true;
-    console.log('🔄 Connecting to MongoDB Atlas...');
-
+    // Optimized connection options for Vercel serverless
     const conn = await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 45000,
-      connectTimeoutMS: 10000,
-      maxPoolSize: 5,
-      minPoolSize: 1,
-      maxIdleTimeMS: 30000,
-      bufferCommands: true,
+      // Reduced timeouts for faster serverless startup
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+      socketTimeoutMS: 30000,
+
+      // Serverless-optimized pool settings
+      maxPoolSize: 1,
+      minPoolSize: 0,
+      maxIdleTimeMS: 10000,
+
+      // Essential options
+      bufferCommands: false, // Disable mongoose buffering for serverless
+      bufferMaxEntries: 0,   // Disable mongoose buffering
       retryWrites: true,
+
+      // Network optimization
       family: 4,
       directConnection: false,
-      heartbeatFrequencyMS: 30000,
+
+      // Additional serverless optimizations
+      heartbeatFrequencyMS: 10000,
+      serverSelectionRetryDelayMS: 2000,
     });
 
     console.log('✅ MongoDB Atlas connected successfully');
-    isConnecting = false;
+    console.log(`📍 Connected to: ${conn.connection.host}`);
+    console.log(`🗄️  Database: ${conn.connection.name}`);
+
+    cachedConnection = conn;
     return conn;
   } catch (error) {
     console.error('❌ MongoDB connection failed:', error.message);
-    isConnecting = false;
+    console.error('❌ Error details:', {
+      name: error.name,
+      code: error.code,
+      codeName: error.codeName
+    });
+
+    cachedConnection = null;
     return null;
   }
 };
 
-// Initialize database connection
-if (!connectionPromise) {
-  connectionPromise = connectDB();
-}
+// Database connection middleware for API routes
+const ensureDBConnection = async (req, res, next) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      console.log('🔄 Database not connected, attempting connection...');
+      await connectDB();
+    }
+    next();
+  } catch (error) {
+    console.error('❌ Database connection middleware error:', error);
+    next(); // Continue anyway, let individual routes handle DB errors
+  }
+};
 
 // Routes
-app.get("/", (req, res) => {
-  const dbState = mongoose.connection.readyState;
-  res.json({
-    message: "Horn of Antiques API Server",
-    status: "running",
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || "development",
-    database: {
-      connected: dbState === 1,
-      state: dbState === 1 ? "connected" : dbState === 2 ? "connecting" : "disconnected",
-      host: mongoose.connection.host || "not connected"
-    },
-    endpoints: {
-      health: "/health",
-      api: "/api/*"
+app.get("/", async (req, res) => {
+  try {
+    // Attempt connection if not connected
+    if (mongoose.connection.readyState !== 1) {
+      await connectDB();
     }
-  });
+
+    const dbState = mongoose.connection.readyState;
+    res.json({
+      message: "Horn of Antiques API Server",
+      status: "running",
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || "development",
+      database: {
+        connected: dbState === 1,
+        state: dbState === 1 ? "connected" : dbState === 2 ? "connecting" : "disconnected",
+        host: mongoose.connection.host || "not connected",
+        name: mongoose.connection.name || "unknown"
+      },
+      endpoints: {
+        health: "/health",
+        api: "/api/*"
+      }
+    });
+  } catch (error) {
+    console.error('❌ Root endpoint error:', error);
+    res.json({
+      message: "Horn of Antiques API Server",
+      status: "running",
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || "development",
+      database: {
+        connected: false,
+        state: "error",
+        error: error.message
+      }
+    });
+  }
 });
 
-// Health check endpoint
-app.get("/health", (req, res) => {
-  const dbState = mongoose.connection.readyState;
-  const dbStates = {
-    0: 'disconnected',
-    1: 'connected',
-    2: 'connecting',
-    3: 'disconnecting'
-  };
+// Health check endpoint with connection attempt
+app.get("/health", async (req, res) => {
+  try {
+    // Force connection attempt for health check
+    await connectDB();
 
-  res.json({
-    status: "healthy",
-    database: {
-      state: dbStates[dbState] || 'unknown',
-      connected: dbState === 1,
-      host: mongoose.connection.host || 'unknown',
-      name: mongoose.connection.name || 'unknown',
-      readyState: dbState
-    },
-    environment: process.env.NODE_ENV || 'development',
-    timestamp: new Date().toISOString(),
-    version: "1.0.0"
-  });
+    const dbState = mongoose.connection.readyState;
+    const dbStates = {
+      0: 'disconnected',
+      1: 'connected',
+      2: 'connecting',
+      3: 'disconnecting'
+    };
+
+    res.json({
+      status: dbState === 1 ? "healthy" : "degraded",
+      database: {
+        state: dbStates[dbState] || 'unknown',
+        connected: dbState === 1,
+        host: mongoose.connection.host || 'unknown',
+        name: mongoose.connection.name || 'unknown',
+        readyState: dbState
+      },
+      environment: process.env.NODE_ENV || 'development',
+      timestamp: new Date().toISOString(),
+      version: "1.0.0"
+    });
+  } catch (error) {
+    console.error('❌ Health check error:', error);
+    res.status(503).json({
+      status: "unhealthy",
+      database: {
+        state: "error",
+        connected: false,
+        error: error.message
+      },
+      environment: process.env.NODE_ENV || 'development',
+      timestamp: new Date().toISOString(),
+      version: "1.0.0"
+    });
+  }
 });
 
-// API Routes
-app.use("/api/users", userRoute);
-app.use("/api/product", productRoute);
-app.use("/api/bidding", biddingRoute);
-app.use("/api/category", categoryRoute);
-app.use("/api/appraisal", appraisalRoute);
-app.use("/api/document", documentRoute);
-app.use("/api/newsletter", newsletterRoute);
-app.use("/api/payments", paymentRoute);
-app.use("/api/auction-management", auctionManagementRoute);
+// API Routes with database connection middleware
+app.use("/api/users", ensureDBConnection, userRoute);
+app.use("/api/product", ensureDBConnection, productRoute);
+app.use("/api/bidding", ensureDBConnection, biddingRoute);
+app.use("/api/category", ensureDBConnection, categoryRoute);
+app.use("/api/appraisal", ensureDBConnection, appraisalRoute);
+app.use("/api/document", ensureDBConnection, documentRoute);
+app.use("/api/newsletter", ensureDBConnection, newsletterRoute);
+app.use("/api/payments", ensureDBConnection, paymentRoute);
+app.use("/api/auction-management", ensureDBConnection, auctionManagementRoute);
 
 // Note: Static file serving removed for serverless compatibility
 // Files should be served from cloud storage (Cloudinary) instead
