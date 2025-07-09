@@ -2,7 +2,7 @@ const express = require("express");
 const asyncHandler = require("express-async-handler");
 const ServerlessAuctionService = require("../services/serverlessAuctionService");
 const ServerlessSocketService = require("../services/serverlessSocketService");
-const { protect, adminOnly } = require("../middleWare/authMiddleWare");
+const { protect, isAdmin } = require("../middleWare/authMiddleWare");
 
 const router = express.Router();
 const auctionService = new ServerlessAuctionService();
@@ -38,7 +38,7 @@ router.post("/process-expired", asyncHandler(async (req, res) => {
  * @desc    Process expired auctions (admin access)
  * @access  Admin only
  */
-router.post("/process-expired-admin", protect, adminOnly, asyncHandler(async (req, res) => {
+router.post("/process-expired-admin", protect, isAdmin, asyncHandler(async (req, res) => {
   try {
     const result = await auctionService.processExpiredAuctions();
     res.status(200).json({
@@ -60,7 +60,7 @@ router.post("/process-expired-admin", protect, adminOnly, asyncHandler(async (re
  * @desc    Manually end a specific auction
  * @access  Admin only
  */
-router.post("/end-auction/:id", protect, adminOnly, asyncHandler(async (req, res) => {
+router.post("/end-auction/:id", protect, isAdmin, asyncHandler(async (req, res) => {
   try {
     const result = await auctionService.endAuction(req.params.id);
     res.status(200).json({
@@ -82,7 +82,7 @@ router.post("/end-auction/:id", protect, adminOnly, asyncHandler(async (req, res
  * @desc    Get auctions ending soon
  * @access  Admin only
  */
-router.get("/ending-soon", protect, adminOnly, asyncHandler(async (req, res) => {
+router.get("/ending-soon", protect, isAdmin, asyncHandler(async (req, res) => {
   try {
     const minutesAhead = parseInt(req.query.minutes) || 30;
     const auctions = await auctionService.getAuctionsEndingSoon(minutesAhead);

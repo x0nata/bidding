@@ -379,21 +379,6 @@ Horn of Antiques Team
       for (const bid of losingBids) {
         // Email functionality disabled for simplified deployment
         console.log('📧 Email disabled - would notify losing bidder:', bid.user.email);
-          text: `
-Dear ${bid.user.name},
-
-The ${bid.product.auctionType.toLowerCase()} auction for "${bid.product.title}" has ended.
-
-${reasonText}
-
-Unfortunately, your bid of $${bid.price} was not the winning bid.
-
-Thank you for participating in Horn of Antiques! We hope you'll find other interesting items in our upcoming auctions.
-
-Best regards,
-Horn of Antiques Team
-          `,
-        });
       }
     } catch (error) {
       console.error('Error notifying losers:', error);
