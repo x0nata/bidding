@@ -132,7 +132,25 @@ const loginStatus = asyncHandler(async (req, res) => {
 });
 
 const getUser = asyncHandler(async (req, res) => {
+  // Handle hardcoded admin user
+  if (req.user._id === "admin_hardcoded_id") {
+    return res.status(200).json({
+      _id: "admin_hardcoded_id",
+      name: "System Administrator",
+      email: "admin@gmail.com",
+      photo: null,
+      role: "admin",
+      balance: 0,
+      commissionBalance: 0
+    });
+  }
+
   const user = await User.findById(req.user._id).select("-password");
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
 
   res.status(200).json(user);
 });
@@ -187,7 +205,14 @@ const logoutUser = asyncHandler(async (req, res) => {
 // loginAsSeller function removed - all users can now buy and sell
 
 const getUserBalance = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id);
+  // Handle hardcoded admin user
+  if (req.user._id === "admin_hardcoded_id") {
+    return res.status(200).json({
+      balance: 0,
+    });
+  }
+
+  const user = await User.findById(req.user._id);
 
   if (!user) {
     res.status(404);
@@ -231,7 +256,13 @@ const estimateIncome = asyncHandler(async (req, res) => {
 
 // Update user profile
 const updateUserProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id);
+  // Handle hardcoded admin user - prevent profile updates
+  if (req.user._id === "admin_hardcoded_id") {
+    res.status(403);
+    throw new Error("Cannot update hardcoded admin profile");
+  }
+
+  const user = await User.findById(req.user._id);
 
   if (!user) {
     res.status(404);

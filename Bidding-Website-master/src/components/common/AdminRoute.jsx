@@ -13,7 +13,10 @@ const AdminRoute = ({ children }) => {
     // Only check auth status if we don't have user data or if not authenticated
     if (!isAuthenticated || !user) {
       console.log('AdminRoute: Checking auth status due to missing authentication');
+      console.log('AdminRoute: Current state before check:', { isAuthenticated, user: user?.role });
       dispatch(checkAuthStatus());
+    } else {
+      console.log('AdminRoute: Auth status OK, user role:', user?.role);
     }
   }, [dispatch, isAuthenticated, user, location.pathname]);
 

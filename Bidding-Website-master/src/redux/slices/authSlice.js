@@ -94,9 +94,12 @@ export const checkAuthStatus = createAsyncThunk(
 
       // First check if the token is valid
       const statusResponse = await axios.get(`${API_URL}/api/users/loggedin`);
+      console.log('Auth status response:', statusResponse.data);
+
       if (statusResponse.data) {
         // If valid, get user data
         const userResponse = await axios.get(`${API_URL}/api/users/getuser`);
+        console.log('User data response:', userResponse.data);
         return userResponse.data;
       }
 
