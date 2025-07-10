@@ -119,11 +119,11 @@ export const apiEndpoints = {
   // These endpoints don't exist on the backend - use adminAnalyticsApi, adminUserApi, etc.
   admin: {
     // Deprecated - use adminUserApi.getAllUsers() instead
-    getUsers: () => api.get('/users/users'),
+    getUsers: () => api.get('/api/users/users'),
     // Deprecated - use adminUserApi.updateUser() instead
-    updateUser: (id, data) => api.put(`/users/admin/${id}`, data),
+    updateUser: (id, data) => api.put(`/api/users/admin/${id}`, data),
     // Deprecated - use adminUserApi.deleteUser() instead
-    deleteUser: (id) => api.delete(`/users/admin/${id}`),
+    deleteUser: (id) => api.delete(`/api/users/admin/${id}`),
     // Deprecated - use adminAnalyticsApi.getSystemStats() instead
     getStats: () => {
       // admin.getStats() is deprecated. Use adminAnalyticsApi.getSystemStats() instead.
@@ -132,9 +132,9 @@ export const apiEndpoints = {
     // Not implemented on backend
     getReports: () => api.get('/admin/reports'),
     // Deprecated - use adminProductApi.updateProductStatus() instead
-    approveProduct: (id) => api.put(`/product/admin/product-verified/${id}`, { status: 'approved' }),
+    approveProduct: (id) => api.put(`/api/product/admin/product-verified/${id}`, { status: 'approved' }),
     // Deprecated - use adminProductApi.updateProductStatus() instead
-    rejectProduct: (id) => api.put(`/product/admin/product-verified/${id}`, { status: 'rejected' }),
+    rejectProduct: (id) => api.put(`/api/product/admin/product-verified/${id}`, { status: 'rejected' }),
   },
 
   // Appraisals

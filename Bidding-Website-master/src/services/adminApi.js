@@ -130,7 +130,7 @@ export const adminProductApi = {
   // Delete product (admin)
   deleteProduct: async (productId) => {
     try {
-      const response = await adminApi.delete(`/product/admin/products`, {
+      const response = await adminApi.delete(`/api/product/admin/products`, {
         data: { productIds: productId }
       });
       return response.data;
@@ -167,7 +167,7 @@ export const adminAuctionApi = {
   // End auction early
   endAuctionEarly: async (auctionId, reason = '') => {
     try {
-      const response = await adminApi.post(`/product/admin/auctions/${auctionId}/end`, { reason });
+      const response = await adminApi.post(`/api/product/admin/auctions/${auctionId}/end`, { reason });
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to end auction';
@@ -177,7 +177,7 @@ export const adminAuctionApi = {
   // Change auction status (approve, reject, pause, cancel)
   changeAuctionStatus: async (auctionId, status, reason = '') => {
     try {
-      const response = await adminApi.patch(`/product/admin/auctions/${auctionId}/status`, {
+      const response = await adminApi.patch(`/api/product/admin/auctions/${auctionId}/status`, {
         status,
         reason
       });
@@ -190,7 +190,7 @@ export const adminAuctionApi = {
   // Get auction bid history
   getAuctionBidHistory: async (auctionId, params = {}) => {
     try {
-      const response = await adminApi.get(`/product/admin/auctions/${auctionId}/bids`, { params });
+      const response = await adminApi.get(`/api/product/admin/auctions/${auctionId}/bids`, { params });
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to fetch bid history';
@@ -200,7 +200,7 @@ export const adminAuctionApi = {
   // Delete auction
   deleteAuction: async (auctionId) => {
     try {
-      const response = await adminApi.delete(`/product/admin/products`, {
+      const response = await adminApi.delete(`/api/product/admin/products`, {
         data: { productIds: auctionId }
       });
       return response.data;
@@ -215,15 +215,24 @@ export const adminAnalyticsApi = {
   // Get system statistics
   getSystemStats: async () => {
     try {
-      const [usersResponse, productsResponse, revenueResponse] = await Promise.all([
-        adminApi.get('/api/users/users'),  // Backend route is actually /users/users - let me check
-        adminApi.get('/api/product'),
-        adminApi.get('/api/users/estimate-income')
+      // Fetch users and products data
+      const [usersResponse, productsResponse] = await Promise.all([
+        adminApi.get('/api/users/users'),
+        adminApi.get('/api/product')
       ]);
 
       const users = usersResponse.data;
       const products = productsResponse.data.products || productsResponse.data || [];
-      const revenue = revenueResponse.data.commissionBalance || 0;
+
+      // Try to get revenue data, but don't fail if it's not available
+      let revenue = 0;
+      try {
+        const revenueResponse = await adminApi.get('/api/users/estimate-income');
+        revenue = revenueResponse.data.commissionBalance || 0;
+      } catch (revenueError) {
+        console.warn('Could not fetch revenue data, using default value:', revenueError.message);
+        revenue = 0; // Default value
+      }
 
       const stats = {
         totalUsers: users.length,
@@ -247,7 +256,7 @@ export const adminAnalyticsApi = {
   // Get revenue data
   getRevenueData: async () => {
     try {
-      const response = await adminApi.get('/users/estimate-income');
+      const response = await adminApi.get('/api/users/estimate-income');
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to fetch revenue data';

@@ -114,7 +114,7 @@ export const createProduct = createAsyncThunk(
       });
 
       // Add timeout to the request
-      const response = await axios.post(`${API_URL}/product`, formData, {
+      const response = await axios.post(`${API_URL}/api/product`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         timeout: 30000, // 30 second timeout
         validateStatus: function (status) {
@@ -169,7 +169,7 @@ export const updateProduct = createAsyncThunk(
         }
       });
       
-      const response = await axios.put(`${API_URL}/product/${id}`, formData, {
+      const response = await axios.put(`${API_URL}/api/product/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       return response.data;

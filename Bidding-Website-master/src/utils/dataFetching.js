@@ -178,7 +178,7 @@ export const fetchDashboardStats = async () => {
 // Data submission functions
 export const submitProductListing = async (formData) => {
   try {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/product`, {
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/product`, {
       method: 'POST',
       body: formData instanceof FormData ? formData : JSON.stringify(formData),
       headers: formData instanceof FormData ? {} : { 'Content-Type': 'application/json' }

@@ -212,6 +212,12 @@ const getAllUser = asyncHandler(async (req, res) => {
 
 const estimateIncome = asyncHandler(async (req, res) => {
   try {
+    // Check if this is the hardcoded admin user
+    if (req.user && req.user._id === "admin_hardcoded_id") {
+      // Return default commission balance for hardcoded admin
+      return res.status(200).json({ commissionBalance: 0 });
+    }
+
     const admin = await User.findOne({ role: "admin" });
     if (!admin) {
       return res.status(404).json({ error: "Admin user not found" });
