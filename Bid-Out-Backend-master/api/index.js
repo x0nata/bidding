@@ -291,10 +291,12 @@ app.get("/", async (req, res) => {
 
     const dbState = mongoose.connection.readyState;
     res.json({
-      message: "Horn of Antiques API Server",
+      message: "Horn of Antiques API Server - Memory Storage Fixed",
       status: "running",
       timestamp: new Date().toISOString(),
-      version: "2.0.1", // Updated to force deployment
+      version: "2.1.0",
+      deploymentId: "DEPLOY_2025_07_10_MEMORY_STORAGE_FIX",
+      fileUploadMode: "MEMORY_STORAGE_CLOUDINARY",
       environment: process.env.NODE_ENV || "development",
       database: {
         connected: dbState === 1,
@@ -743,18 +745,20 @@ app.get("/debug/routes", (req, res) => {
   });
 });
 
-// File upload configuration debug endpoint
+// File upload configuration debug endpoint - DEPLOYMENT FIX 2025-07-10
 app.get("/debug/file-upload", (req, res) => {
   const { upload } = require("../utils/fileUpload");
 
   res.json({
-    message: "File Upload Configuration Debug",
+    message: "File Upload Configuration Debug - MEMORY STORAGE ACTIVE",
     timestamp: new Date().toISOString(),
+    deploymentStatus: "FIXED_MEMORY_STORAGE_2025_07_10",
     multerConfig: {
-      storageType: "memory", // We're using memory storage
+      storageType: "MEMORY_STORAGE", // ✅ Using memory storage (NOT disk)
       maxFileSize: "5MB",
       allowedTypes: "images only",
-      serverlessCompatible: true
+      serverlessCompatible: true,
+      diskStorageDisabled: true
     },
     cloudinaryConfig: {
       configured: !!(process.env.CLOUDINARY_CLOUD_NAME &&
@@ -769,10 +773,18 @@ app.get("/debug/file-upload", (req, res) => {
       isVercel: !!process.env.VERCEL,
       platform: process.platform
     },
+    fileUploadFlow: [
+      "1. Frontend sends FormData with images",
+      "2. Multer processes files in MEMORY (no disk writes)",
+      "3. Files converted to base64 buffers",
+      "4. Uploaded directly to Cloudinary",
+      "5. No 'uploads/' directory access needed"
+    ],
     notes: [
-      "Using multer.memoryStorage() for serverless compatibility",
-      "Files are processed as buffers and uploaded to Cloudinary",
-      "No local file system access required"
+      "✅ FIXED: Using multer.memoryStorage() for serverless compatibility",
+      "✅ FIXED: Files are processed as buffers and uploaded to Cloudinary",
+      "✅ FIXED: No local file system access required",
+      "❌ OLD: No more disk storage or uploads/ directory access"
     ]
   });
 });

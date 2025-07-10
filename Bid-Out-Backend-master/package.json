@@ -1,7 +1,7 @@
 {
   "name": "horn-of-antiques-backend",
-  "version": "1.0.0",
-  "description": "Backend API for Horn of Antiques - Antique Auction for Ethiopia",
+  "version": "2.1.0",
+  "description": "Backend API for Horn of Antiques - Antique Auction for Ethiopia - Memory Storage Fixed",
   "main": "api/index.js",
   "author": "Sunil BK",
   "license": "ISC",
