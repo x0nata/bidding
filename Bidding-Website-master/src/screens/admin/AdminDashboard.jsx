@@ -22,6 +22,7 @@ import { RiAuctionFill } from "react-icons/ri";
 import { GiDiploma } from "react-icons/gi";
 import UserManagement from '../../components/admin/UserManagement';
 import AuctionManagement from '../../components/admin/AuctionManagement';
+import { TransportationManagement } from '../../admin/transportation/TransportationManagement';
 import { adminAnalyticsApi } from '../../services/adminApi';
 import auditLogger, { AuditLogger } from '../../services/auditLogger';
 
@@ -190,6 +191,8 @@ export const AdminDashboard = () => {
     </div>
   );
 
+  // Transportation now renders directly within admin dashboard like other sections
+
   const renderSection = () => {
     switch (activeSection) {
       case 'overview':
@@ -199,9 +202,7 @@ export const AdminDashboard = () => {
       case 'auctions':
         return <AuctionManagement />;
       case 'transportation':
-        // Redirect to the transportation management page
-        navigate('/admin/transportation');
-        return null;
+        return <TransportationManagement />;
       default:
         return renderOverview();
     }

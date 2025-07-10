@@ -39,7 +39,6 @@ import {
   NewsletterUnsubscribe,
   UserAuctions,
   BalanceManagement,
-  TransportationManagement,
 } from "./router/index.js";
 
 // Import components directly to avoid circular dependencies
@@ -65,17 +64,14 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Check authentication status on app load only if we have a token
-    const token = localStorage.getItem('token');
-    if (token) {
-      dispatch(checkAuthStatus());
-    }
-
-    // Load categories
+    // Load categories immediately
     dispatch(getAllCategories());
 
     // WebSocket temporarily disabled for debugging
     console.log('WebSocket connection temporarily disabled');
+
+    // Note: Auth check is now handled by useAuth hook and AdminRoute to prevent conflicts
+    // This prevents multiple simultaneous auth checks that cause infinite loops
 
     // Cleanup on unmount
     return () => {
@@ -461,18 +457,7 @@ function App() {
               </AdminRoute>
             }
           />
-          <Route
-            path="/admin/transportation"
-            element={
-              <AdminRoute>
-                <Layout>
-                  <DashboardLayout>
-                    <TransportationManagement />
-                  </DashboardLayout>
-                </Layout>
-              </AdminRoute>
-            }
-          />
+
 
           {/* Catch-all route for 404 - Must be last */}
           <Route

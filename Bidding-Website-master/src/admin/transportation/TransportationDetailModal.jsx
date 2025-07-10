@@ -1,16 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { MdClose, MdLocationOn, MdPhone, MdEmail, MdDateRange } from "react-icons/md";
-import { FaTruck, FaUser, FaClipboardList } from "react-icons/fa";
+import { FaTruck, FaUser, FaClipboardList, FaSave } from "react-icons/fa";
+import { showSuccess, showError } from "../../redux/slices/notificationSlice";
 
 export const TransportationDetailModal = ({ item, onClose, onStatusUpdate, onRefresh }) => {
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    status: item.transportationStatus || 'Ready for Pickup',
-    notes: item.transportationNotes || '',
-    assignedTo: item.transportationAssignedTo || '',
-    pickupAddress: item.pickupAddress || item.seller?.address || '',
-    deliveryAddress: item.deliveryAddress || item.buyer?.address || ''
+    status: 'Ready for Pickup',
+    notes: '',
+    assignedTo: '',
+    pickupAddress: '',
+    deliveryAddress: ''
   });
+
+  // Initialize form data when item changes - stable effect
+  useEffect(() => {
+    if (item) {
+      setFormData({
+        status: item.transportationStatus || 'Ready for Pickup',
+        notes: item.transportationNotes || '',
+        assignedTo: item.transportationAssignedTo || '',
+        pickupAddress: item.pickupAddress || item.seller?.address || '',
+        deliveryAddress: item.deliveryAddress || item.buyer?.address || ''
+      });
+    }
+  }, [item]);
 
   const statusOptions = [
     'Ready for Pickup',
@@ -32,14 +48,15 @@ export const TransportationDetailModal = ({ item, onClose, onStatusUpdate, onRef
     try {
       const success = await onStatusUpdate(item._id, formData);
       if (success) {
+        dispatch(showSuccess('Transportation details updated successfully'));
         onRefresh();
         onClose();
       } else {
-        alert('Failed to update transportation status');
+        dispatch(showError('Failed to update transportation status'));
       }
     } catch (error) {
       console.error('Error updating status:', error);
-      alert('Failed to update transportation status');
+      dispatch(showError('Failed to update transportation status'));
     } finally {
       setLoading(false);
     }

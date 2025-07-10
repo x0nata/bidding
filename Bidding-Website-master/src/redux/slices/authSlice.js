@@ -302,6 +302,36 @@ const authSlice = createSlice({
 });
 
 export const { clearError, clearMessage, setUser } = authSlice.actions;
+
+// Stable selectors to prevent unnecessary re-renders in Vercel
+export const selectAuthState = (state) => ({
+  isAuthenticated: state.auth.isAuthenticated,
+  isLoading: state.auth.isLoading,
+  userRole: state.auth.user?.role,
+  userId: state.auth.user?._id,
+  hasUser: !!state.auth.user,
+  error: state.auth.error
+});
+
+export const selectIsAdmin = (state) => {
+  return state.auth.isAuthenticated &&
+         state.auth.user &&
+         state.auth.user.role === 'admin';
+};
+
+export const selectUserStable = (state) => {
+  const user = state.auth.user;
+  if (!user) return null;
+
+  // Return a stable object with only essential properties
+  return {
+    id: user._id,
+    role: user.role,
+    name: user.name,
+    email: user.email
+  };
+};
+
 // Helper functions for admin authentication
 export const isAdminUser = (user) => {
   return user && user.role === 'admin';

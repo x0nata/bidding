@@ -1,136 +1,86 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Title } from "../../router";
-import { TiEyeOutline } from "react-icons/ti";
-import { FaTruck, FaSearch, FaFilter } from "react-icons/fa";
-import { MdLocationOn, MdDateRange } from "react-icons/md";
+import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { Title, Body } from "../../components/common/Design";
+import { FaTruck, FaEye, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { MdLocationOn, MdEdit, MdCheckCircle, MdRefresh } from "react-icons/md";
+import { HiOutlineDownload, HiOutlineSearch } from "react-icons/hi";
 import { TransportationDetailModal } from "./TransportationDetailModal";
 import { adminTransportationApi } from "../../services/adminApi";
+import { showSuccess, showError } from "../../redux/slices/notificationSlice";
 
-export const TransportationManagement = () => {
+const TransportationManagement = () => {
+  const dispatch = useDispatch();
+  
+  // Core state - following UserManagement pattern
   const [items, setItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [stats, setStats] = useState({});
-  const [fetchInProgress, setFetchInProgress] = useState(false);
+  const [expandedItems, setExpandedItems] = useState(new Set());
 
-  // Filter and search states
-  const [filters, setFilters] = useState({
-    search: "",
-    status: "all",
-    assignedTo: "",
-    dateFrom: "",
-    dateTo: "",
-    page: 1,
-    limit: 20
-  });
-  
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    hasNext: false,
-    hasPrev: false
-  });
-
-  // Fetch transportation items
-  const fetchItems = useCallback(async () => {
-    // Prevent multiple simultaneous requests
-    if (fetchInProgress) {
-      console.log('🚫 Fetch already in progress, skipping...');
-      return;
-    }
-
+  // Fetch transportation items - following UserManagement pattern exactly
+  const fetchItems = async () => {
     try {
-      setFetchInProgress(true);
       setLoading(true);
-      setError(null);
-
-      // Build query parameters
-      const queryParams = {};
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value && value !== 'all') {
-          queryParams[key] = value;
-        }
-      });
-
-      console.log('Fetching transportation items with params:', queryParams);
-
-      const data = await adminTransportationApi.getItems(queryParams);
-      setItems(data.data || []);
-      setPagination(data.pagination || {});
-      console.log('Transportation items loaded successfully:', data.data?.length || 0, 'items');
-    } catch (err) {
-      console.error('Error fetching transportation items:', err);
-      setError(typeof err === 'string' ? err : 'Failed to fetch transportation items');
+      const itemsData = await adminTransportationApi.getItems();
+      // Ensure itemsData is an array
+      const itemsArray = Array.isArray(itemsData?.data) ? itemsData.data : [];
+      setItems(itemsArray);
+      setFilteredItems(itemsArray);
+    } catch (error) {
+      console.error('Error fetching transportation items:', error);
+      dispatch(showError(error));
       setItems([]);
-      setPagination({});
+      setFilteredItems([]);
     } finally {
       setLoading(false);
-      setFetchInProgress(false);
     }
-  }, [filters.search, filters.status, filters.assignedTo, filters.dateFrom, filters.dateTo, filters.page, filters.limit, fetchInProgress]);
+  };
 
-  // Fetch transportation statistics
-  const fetchStats = useCallback(async () => {
-    try {
-      console.log('Fetching transportation stats...');
-
-      const data = await adminTransportationApi.getStats();
-      setStats(data.data || {});
-      console.log('Transportation stats loaded successfully:', data.data);
-    } catch (err) {
-      console.error('Failed to fetch transportation stats:', err);
-
-      // Set default stats on error to prevent UI issues
-      setStats({
-        statusBreakdown: {
-          'Ready for Pickup': 0,
-          'In Transit': 0,
-          'Delivered': 0,
-          'Not Required': 0
-        },
-        totalSoldItems: 0,
-        totalRequiringTransportation: 0
-      });
-    }
+  // Initial fetch - following UserManagement pattern exactly
+  useEffect(() => {
+    fetchItems();
   }, []);
 
-  // Track if initial load is complete to prevent infinite loops
-  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-
+  // Filter and search logic - following UserManagement pattern exactly
   useEffect(() => {
-    // Only run on mount and when specific filter values change
-    console.log('🔄 Transportation useEffect triggered');
+    filterItems();
+  }, [items, searchTerm, statusFilter]);
 
-    // Add a small delay to prevent rapid successive calls
-    const timeoutId = setTimeout(() => {
-      if (!fetchInProgress) {
-        fetchItems();
-        fetchStats();
-        setInitialLoadComplete(true);
-      }
-    }, 100);
+  // Filter function - following UserManagement pattern exactly
+  const filterItems = () => {
+    let filtered = [...items];
 
-    return () => clearTimeout(timeoutId);
-  }, [fetchItems, fetchStats, fetchInProgress]);
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(item =>
+        item.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.buyer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.seller?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value,
-      page: 1 // Reset to first page when filtering
-    }));
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(item => 
+        (item.transportationStatus || 'Ready for Pickup') === statusFilter
+      );
+    }
+
+    setFilteredItems(filtered);
   };
 
-  const handlePageChange = (newPage) => {
-    setFilters(prev => ({
-      ...prev,
-      page: newPage
-    }));
-  };
+  // Pagination logic
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedItems = filteredItems.slice(startIndex, startIndex + itemsPerPage);
 
+  // Event handlers
   const handleViewDetails = (item) => {
     setSelectedItem(item);
     setShowModal(true);
@@ -138,291 +88,415 @@ export const TransportationManagement = () => {
 
   const handleStatusUpdate = async (itemId, updateData) => {
     try {
-      console.log('Updating transportation status for item:', itemId, updateData);
-
       await adminTransportationApi.updateStatus(itemId, updateData);
-
-      console.log('Transportation status updated successfully for item:', itemId);
-
-      // Refresh the items list
-      await fetchItems();
-      await fetchStats();
-
+      dispatch(showSuccess('Transportation status updated successfully'));
+      fetchItems(); // Refresh the list - following UserManagement pattern
       return true;
-    } catch (err) {
-      console.error('Error updating transportation status:', err);
+    } catch (error) {
+      console.error('Failed to update transportation status:', error);
+      dispatch(showError(error));
       return false;
     }
   };
 
+  const handleQuickStatusUpdate = async (itemId, newStatus) => {
+    try {
+      const updateData = {
+        status: newStatus,
+        notes: `Status updated to ${newStatus} via quick action`,
+        assignedTo: '',
+        pickupAddress: '',
+        deliveryAddress: ''
+      };
+
+      await adminTransportationApi.updateStatus(itemId, updateData);
+      dispatch(showSuccess(`Status updated to ${newStatus}`));
+      fetchItems(); // Refresh the list - following UserManagement pattern
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      dispatch(showError(error));
+    }
+  };
+
+  const handleMarkAsDelivered = async (itemId) => {
+    if (window.confirm('Mark this item as delivered? This action cannot be undone.')) {
+      await handleQuickStatusUpdate(itemId, 'Delivered');
+    }
+  };
+
+  const toggleItemExpansion = (itemId) => {
+    setExpandedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
+  };
+
+  // Utility functions
   const getStatusColor = (status) => {
     switch (status) {
       case 'Ready for Pickup':
-        return 'bg-yellow-500';
+        return 'text-yellow-600 bg-yellow-100 border-yellow-200';
       case 'In Transit':
-        return 'bg-blue-500';
+        return 'text-blue-600 bg-blue-100 border-blue-200';
       case 'Delivered':
-        return 'bg-green-500';
+        return 'text-green-600 bg-green-100 border-green-200';
       default:
-        return 'bg-gray-500';
+        return 'text-gray-600 bg-gray-100 border-gray-200';
     }
   };
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-ET', {
+    if (!amount) return '$0.00';
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'ETB'
-    }).format(amount || 0);
+      currency: 'USD'
+    }).format(amount);
   };
 
+  // Loading state - following admin panel pattern
   if (loading) {
     return (
-      <section className="shadow-s1 p-8 rounded-lg">
-        <div className="flex justify-center items-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading transportation data...</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (error) {
-    return (
-      <section className="shadow-s1 p-8 rounded-lg">
-        <div className="flex justify-center items-center h-64">
-          <div className="text-center">
-            <div className="text-red-500 mb-4">
-              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.876c1.38 0 2.5-1.12 2.5-2.5 0-.394-.094-.77-.26-1.106L13.64 6.394a2.5 2.5 0 00-4.28 0L3.86 15.394c-.166.336-.26.712-.26 1.106 0 1.38 1.12 2.5 2.5 2.5z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Transportation Data</h3>
-            <p className="text-gray-600 mb-4">{error}</p>
-            <button
-              onClick={() => {
-                setError(null);
-                fetchItems();
-                fetchStats();
-              }}
-              className="bg-green text-white px-4 py-2 rounded-lg hover:bg-primary transition-colors"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      </section>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green"></div>
+        <span className="ml-3 text-gray-600">Loading transportation data...</span>
+      </div>
     );
   }
 
   return (
-    <>
-      <section className="shadow-s1 p-8 rounded-lg">
-        <div className="flex justify-between items-center mb-6">
-          <Title level={5} className="font-normal">
-            Transportation Management
-          </Title>
-          <div className="flex items-center gap-4">
-            <FaTruck className="text-green" size={24} />
-            <span className="text-sm text-gray-600">
-              {stats.totalRequiringTransportation || 0} items requiring transportation
-            </span>
+    <div className="space-y-6">
+      {/* Header - following admin panel pattern */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <FaTruck className="text-green text-2xl" />
+          <Title level={3} className="text-gray-800">Transportation Management</Title>
+        </div>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={fetchItems}
+            className="flex items-center space-x-2 bg-green text-white px-4 py-2 rounded-lg hover:bg-primary transition-colors"
+          >
+            <MdRefresh size={16} />
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Cards - following admin panel pattern */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <Title level={1} className="text-green">{items.length}</Title>
+              <Body className="text-gray-600">Total Items</Body>
+            </div>
+            <FaTruck className="text-green text-2xl" />
           </div>
         </div>
-
-        {/* Statistics Cards */}
-        {stats.statusBreakdown && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            {Object.entries(stats.statusBreakdown).map(([status, count]) => (
-              <div key={status} className="bg-white p-4 rounded-lg border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">{status}</p>
-                    <p className="text-2xl font-bold text-gray-900">{count}</p>
-                  </div>
-                  <div className={`w-3 h-3 rounded-full ${getStatusColor(status)}`}></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Search and Filter Controls */}
-        <div className="bg-gray-50 p-4 rounded-lg mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-              <input
-                type="text"
-                placeholder="Search items..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-transparent"
-                value={filters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-              />
+        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <Title level={1} className="text-yellow-600">{items.filter(item => (item.transportationStatus || 'Ready for Pickup') === 'Ready for Pickup').length}</Title>
+              <Body className="text-gray-600">Ready for Pickup</Body>
             </div>
+            <MdLocationOn className="text-yellow-600 text-2xl" />
+          </div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <Title level={1} className="text-blue-600">{items.filter(item => item.transportationStatus === 'In Transit').length}</Title>
+              <Body className="text-gray-600">In Transit</Body>
+            </div>
+            <FaTruck className="text-blue-600 text-2xl" />
+          </div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <Title level={1} className="text-green">{items.filter(item => item.transportationStatus === 'Delivered').length}</Title>
+              <Body className="text-gray-600">Delivered</Body>
+            </div>
+            <MdCheckCircle className="text-green text-2xl" />
+          </div>
+        </div>
+      </div>
 
-            {/* Status Filter */}
-            <select
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-transparent"
-              value={filters.status}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-            >
-              <option value="all">All Statuses</option>
-              <option value="Ready for Pickup">Ready for Pickup</option>
-              <option value="In Transit">In Transit</option>
-              <option value="Delivered">Delivered</option>
-            </select>
-
-            {/* Assigned To Filter */}
+      {/* Search and Filters - following admin panel pattern */}
+      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Search */}
+          <div className="relative">
+            <HiOutlineSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Assigned to..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-transparent"
-              value={filters.assignedTo}
-              onChange={(e) => handleFilterChange('assignedTo', e.target.value)}
+              placeholder="Search items, buyers, sellers..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-green focus:border-green outline-none"
             />
+          </div>
 
-            {/* Date From */}
-            <input
-              type="date"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-transparent"
-              value={filters.dateFrom}
-              onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
-            />
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-green focus:border-green outline-none"
+          >
+            <option value="all">All Statuses</option>
+            <option value="Ready for Pickup">Ready for Pickup</option>
+            <option value="In Transit">In Transit</option>
+            <option value="Delivered">Delivered</option>
+          </select>
 
-            {/* Date To */}
-            <input
-              type="date"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-transparent"
-              value={filters.dateTo}
-              onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-            />
+          {/* Items per page */}
+          <select
+            value={itemsPerPage}
+            onChange={(e) => setItemsPerPage(Number(e.target.value))}
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-green focus:border-green outline-none"
+          >
+            <option value={10}>10 per page</option>
+            <option value={25}>25 per page</option>
+            <option value={50}>50 per page</option>
+          </select>
+
+          {/* Results Count */}
+          <div className="flex items-center text-sm text-gray-600">
+            <span>Showing {filteredItems.length} of {items.length} items</span>
           </div>
         </div>
+      </div>
 
-        <hr className="my-5" />
-
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
+      {/* Transportation Items - following admin panel pattern */}
+      <div className="bg-white rounded-lg shadow-md border border-gray-200">
+        {paginatedItems.length === 0 ? (
+          <div className="p-12 text-center">
+            <FaTruck className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <Title level={4} className="text-gray-900 mb-2">No Transportation Items</Title>
+            <Body className="text-gray-600">
+              {items.length === 0
+                ? "No items require transportation at this time. Items will appear here when auction items are won and need delivery."
+                : "No items match your current search and filter criteria."
+              }
+            </Body>
           </div>
-        )}
+        ) : (
+          <div className="overflow-hidden">
+            {/* Table Header */}
+            <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
+              <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700">
+                <div className="col-span-3">Item Details</div>
+                <div className="col-span-2">Buyer</div>
+                <div className="col-span-2">Seller</div>
+                <div className="col-span-2">Status</div>
+                <div className="col-span-2">Amount</div>
+                <div className="col-span-1">Actions</div>
+              </div>
+            </div>
 
-        {/* Transportation Items Table */}
-        <div className="relative overflow-x-auto rounded-lg">
-          <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-100">
-              <tr>
-                <th scope="col" className="px-6 py-5">Item</th>
-                <th scope="col" className="px-6 py-3">Buyer</th>
-                <th scope="col" className="px-6 py-3">Seller</th>
-                <th scope="col" className="px-6 py-3">Final Price</th>
-                <th scope="col" className="px-6 py-3">Sale Date</th>
-                <th scope="col" className="px-6 py-3">Status</th>
-                <th scope="col" className="px-6 py-3">Assigned To</th>
-                <th scope="col" className="px-6 py-3">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.length === 0 ? (
-                <tr>
-                  <td colSpan="8" className="px-6 py-8 text-center text-gray-500">
-                    No transportation items found
-                  </td>
-                </tr>
-              ) : (
-                items.map((item) => (
-                  <tr key={item._id} className="bg-white border-b hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <img 
-                          className="w-12 h-12 rounded-lg object-cover" 
-                          src={item.image?.filePath || '/placeholder-image.jpg'} 
-                          alt={item.title}
-                        />
-                        <div>
-                          <p className="font-medium text-gray-900">{item.title?.slice(0, 30)}...</p>
-                          <p className="text-xs text-gray-500">ID: {item._id.slice(-8)}</p>
+            {/* Table Body */}
+            <div className="divide-y divide-gray-200">
+              {paginatedItems.map((item) => (
+                <div key={item._id} className="hover:bg-gray-50 transition-colors">
+                  {/* Main Row */}
+                  <div className="px-6 py-4">
+                    <div className="grid grid-cols-12 gap-4 items-center">
+                      {/* Item Details */}
+                      <div className="col-span-3">
+                        <div className="flex items-center space-x-3">
+                          <img
+                            className="w-12 h-12 rounded-lg object-cover"
+                            src={item.image?.filePath || '/placeholder-image.jpg'}
+                            alt={item.title}
+                            onError={(e) => {
+                              e.target.src = '/placeholder-image.jpg';
+                            }}
+                          />
+                          <div>
+                            <Title level={5} className="text-gray-900 font-medium">{item.title}</Title>
+                            <Body className="text-gray-600 text-sm">ID: {item._id.slice(-8)}</Body>
+                          </div>
                         </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="font-medium">{item.buyer?.name}</p>
-                        <p className="text-xs text-gray-500">{item.buyer?.email}</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="font-medium">{item.seller?.name}</p>
-                        <p className="text-xs text-gray-500">{item.seller?.email}</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 font-medium">
-                      {formatCurrency(item.finalPrice)}
-                    </td>
-                    <td className="px-6 py-4">
-                      {formatDate(item.settlementDate)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        <div className={`h-2.5 w-2.5 rounded-full ${getStatusColor(item.transportationStatus)} me-2`}></div>
-                        <span className="text-xs">{item.transportationStatus || 'Ready for Pickup'}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-xs">{item.transportationAssignedTo || 'Unassigned'}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => handleViewDetails(item)}
-                        className="font-medium text-indigo-500 hover:text-indigo-700"
-                      >
-                        <TiEyeOutline size={25} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
 
-        {/* Pagination */}
-        {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between mt-6">
+                      {/* Buyer */}
+                      <div className="col-span-2">
+                        <Body className="text-gray-900 font-medium">{item.buyer?.name || 'N/A'}</Body>
+                        <Body className="text-gray-600 text-sm">{item.buyer?.email || 'N/A'}</Body>
+                      </div>
+
+                      {/* Seller */}
+                      <div className="col-span-2">
+                        <Body className="text-gray-900 font-medium">{item.seller?.name || 'N/A'}</Body>
+                        <Body className="text-gray-600 text-sm">{item.seller?.email || 'N/A'}</Body>
+                      </div>
+
+                      {/* Status */}
+                      <div className="col-span-2">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(item.transportationStatus || 'Ready for Pickup')}`}>
+                          {item.transportationStatus || 'Ready for Pickup'}
+                        </span>
+                        <Body className="text-gray-600 text-sm mt-1">{formatDate(item.settlementDate)}</Body>
+                      </div>
+
+                      {/* Amount */}
+                      <div className="col-span-2">
+                        <Title level={5} className="text-gray-900 font-bold">{formatCurrency(item.finalPrice)}</Title>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="col-span-1">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => handleViewDetails(item)}
+                            className="p-2 text-gray-400 hover:text-green transition-colors"
+                            title="View Details"
+                          >
+                            <FaEye size={16} />
+                          </button>
+
+                          <button
+                            onClick={() => toggleItemExpansion(item._id)}
+                            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                          >
+                            {expandedItems.has(item._id) ? (
+                              <FaChevronUp size={16} />
+                            ) : (
+                              <FaChevronDown size={16} />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Expanded Content */}
+                  {expandedItems.has(item._id) && (
+                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Buyer Information */}
+                        <div className="bg-white p-4 rounded-lg border border-gray-200">
+                          <Title level={5} className="text-gray-900 mb-3 flex items-center">
+                            <MdLocationOn className="mr-2 text-green" />
+                            Buyer Information
+                          </Title>
+                          <div className="space-y-2">
+                            <Body><span className="font-medium">Name:</span> {item.buyer?.name || 'N/A'}</Body>
+                            <Body><span className="font-medium">Email:</span> {item.buyer?.email || 'N/A'}</Body>
+                            <Body><span className="font-medium">Phone:</span> {item.buyer?.phone || 'N/A'}</Body>
+                            <Body><span className="font-medium">Delivery Address:</span> {item.buyer?.address || 'N/A'}</Body>
+                          </div>
+                        </div>
+
+                        {/* Seller Information */}
+                        <div className="bg-white p-4 rounded-lg border border-gray-200">
+                          <Title level={5} className="text-gray-900 mb-3 flex items-center">
+                            <MdLocationOn className="mr-2 text-blue-500" />
+                            Seller Information
+                          </Title>
+                          <div className="space-y-2">
+                            <Body><span className="font-medium">Name:</span> {item.seller?.name || 'N/A'}</Body>
+                            <Body><span className="font-medium">Email:</span> {item.seller?.email || 'N/A'}</Body>
+                            <Body><span className="font-medium">Phone:</span> {item.seller?.phone || 'N/A'}</Body>
+                            <Body><span className="font-medium">Pickup Address:</span> {item.seller?.address || 'N/A'}</Body>
+                          </div>
+                        </div>
+
+                        {/* Transportation Management */}
+                        <div className="bg-white p-4 rounded-lg border border-gray-200">
+                          <Title level={5} className="text-gray-900 mb-3 flex items-center">
+                            <FaTruck className="mr-2 text-green" />
+                            Transportation Management
+                          </Title>
+                          <div className="space-y-3">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                              <select
+                                value={item.transportationStatus || 'Ready for Pickup'}
+                                onChange={(e) => handleQuickStatusUpdate(item._id, e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-green focus:border-green outline-none"
+                              >
+                                <option value="Ready for Pickup">Ready for Pickup</option>
+                                <option value="In Transit">In Transit</option>
+                                <option value="Delivered">Delivered</option>
+                              </select>
+                            </div>
+                            <Body><span className="font-medium">Assigned To:</span> {item.transportationAssignedTo || 'Unassigned'}</Body>
+                            <Body><span className="font-medium">Notes:</span> {item.transportationNotes || 'No notes'}</Body>
+
+                            <div className="flex space-x-2 mt-4">
+                              <button
+                                onClick={() => handleViewDetails(item)}
+                                className="flex-1 bg-green text-white px-3 py-2 rounded-lg hover:bg-primary transition-colors flex items-center justify-center text-sm"
+                              >
+                                <FaEye className="mr-1" size={14} />
+                                Details
+                              </button>
+                              {(item.transportationStatus || 'Ready for Pickup') !== 'Delivered' && (
+                                <button
+                                  onClick={() => handleMarkAsDelivered(item._id)}
+                                  className="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center text-sm"
+                                >
+                                  <MdCheckCircle className="mr-1" size={14} />
+                                  Delivered
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Pagination - following admin panel pattern */}
+      {totalPages > 1 && (
+        <div className="bg-white px-6 py-3 border-t border-gray-200 rounded-b-lg">
+          <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
-              Showing {((pagination.currentPage - 1) * filters.limit) + 1} to {Math.min(pagination.currentPage * filters.limit, pagination.totalItems)} of {pagination.totalItems} results
+              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredItems.length)} of {filteredItems.length} results
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => handlePageChange(pagination.currentPage - 1)}
-                disabled={!pagination.hasPrev}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 text-sm border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
               >
                 Previous
               </button>
-              <span className="px-3 py-1 text-sm bg-green text-white rounded-lg">
-                {pagination.currentPage}
+              <span className="px-3 py-2 text-sm bg-green text-white rounded-lg">
+                {currentPage} of {totalPages}
               </span>
               <button
-                onClick={() => handlePageChange(pagination.currentPage + 1)}
-                disabled={!pagination.hasNext}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 text-sm border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
               >
                 Next
               </button>
             </div>
           </div>
-        )}
-      </section>
+        </div>
+      )}
 
       {/* Transportation Detail Modal */}
       {showModal && selectedItem && (
@@ -436,6 +510,8 @@ export const TransportationManagement = () => {
           onRefresh={fetchItems}
         />
       )}
-    </>
+    </div>
   );
 };
+
+export { TransportationManagement };

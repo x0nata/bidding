@@ -1,7 +1,11 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { checkAuthStatus, refreshUserData } from '../redux/slices/authSlice';
 import { User1 } from '../utils/userAvatars';
+
+// Global flag to prevent multiple simultaneous auth checks
+let globalAuthCheckInProgress = false;
+let globalAuthCheckDone = false;
 
 /**
  * Custom hook for authentication state management
@@ -10,11 +14,36 @@ import { User1 } from '../utils/userAvatars';
 export const useAuth = () => {
   const dispatch = useDispatch();
   const { user, isAuthenticated, isLoading, error } = useSelector((state) => state.auth);
+  const hasCheckedAuth = useRef(false);
 
-  // Check authentication status on mount
+  // Check authentication status only if not already done globally
   useEffect(() => {
-    dispatch(checkAuthStatus());
-  }, [dispatch]);
+    // Only check auth if:
+    // 1. We haven't checked in this component instance
+    // 2. No global auth check is in progress
+    // 3. Global auth check hasn't been completed yet
+    // 4. We have a token but no user data
+    const token = localStorage.getItem('token');
+    const shouldCheckAuth = !hasCheckedAuth.current &&
+                           !globalAuthCheckInProgress &&
+                           !globalAuthCheckDone &&
+                           token &&
+                           !isAuthenticated;
+
+    if (shouldCheckAuth) {
+      globalAuthCheckInProgress = true;
+      hasCheckedAuth.current = true;
+
+      dispatch(checkAuthStatus()).finally(() => {
+        globalAuthCheckInProgress = false;
+        globalAuthCheckDone = true;
+      });
+    } else if (isAuthenticated || !token) {
+      // Mark as checked if we're already authenticated or have no token
+      hasCheckedAuth.current = true;
+      globalAuthCheckDone = true;
+    }
+  }, [dispatch, isAuthenticated]);
 
   // Get user display data with comprehensive fallbacks
   const getUserDisplayData = () => {

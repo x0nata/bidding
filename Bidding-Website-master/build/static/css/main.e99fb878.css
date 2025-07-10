@@ -2176,6 +2176,9 @@ video {
 .border-b-2{
   border-bottom-width: 2px;
 }
+.border-l-2{
+  border-left-width: 2px;
+}
 .border-l-4{
   border-left-width: 4px;
 }
@@ -4222,6 +4225,12 @@ body {
   color: rgb(91 187 123 / var(--tw-text-opacity, 1));
 }
 
+.hover\:text-indigo-700:hover{
+  --tw-text-opacity: 1;
+  color: rgb(67 56 202 / 1);
+  color: rgb(67 56 202 / var(--tw-text-opacity, 1));
+}
+
 .hover\:text-orange-800:hover{
   --tw-text-opacity: 1;
   color: rgb(154 52 18 / 1);
@@ -4679,6 +4688,9 @@ body {
   }
   .lg\:grid-cols-4{
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .lg\:grid-cols-5{
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
   .lg\:grid-cols-6{
     grid-template-columns: repeat(6, minmax(0, 1fr));
