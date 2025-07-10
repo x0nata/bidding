@@ -189,7 +189,7 @@ const SearchBox = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const suggestions = ["Victorian Jewelry", "Ming Dynasty Vase", "Art Deco Furniture", "Vintage Watches"];
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -199,10 +199,7 @@ const SearchBox = () => {
     }
   };
 
-  const handleSuggestionClick = (suggestion) => {
-    setSearchTerm(suggestion);
-    navigate(`/search?q=${encodeURIComponent(suggestion)}`);
-  };
+
 
   return (
     <div className="relative">
@@ -233,21 +230,7 @@ const SearchBox = () => {
         </div>
       </form>
 
-      {/* Search Suggestions */}
-      <div className="mt-3">
-        <div className="text-sm text-green-200 mb-2">Popular:</div>
-        <div className="flex flex-wrap gap-2">
-          {suggestions.map((suggestion, index) => (
-            <button
-              key={index}
-              onClick={() => handleSuggestionClick(suggestion)}
-              className="px-3 py-1 bg-white bg-opacity-20 text-white text-sm rounded-full hover:bg-opacity-30 transition-all duration-300"
-            >
-              {suggestion}
-            </button>
-          ))}
-        </div>
-      </div>
+
     </div>
   );
 };

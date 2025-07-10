@@ -92,7 +92,7 @@ export const Contact = () => {
         message: ""
       });
     } catch (error) {
-      alert("Failed to send your request. Please try calling us directly at +1 (555) 123-4567");
+      alert("Failed to send your request. Please try calling us directly at +251977165578");
     } finally {
       setIsSubmittingHelp(false);
     }
@@ -114,14 +114,8 @@ export const Contact = () => {
     {
       icon: <FiMapPin size={24} className="text-blue-500" />,
       title: "Address",
-      details: ["123 Antique Row", "Heritage District, NY 10001"],
+      details: ["Addis Ababa, Ethiopia"],
       description: "Visit our showroom"
-    },
-    {
-      icon: <FiClock size={24} className="text-purple-500" />,
-      title: "Business Hours",
-      details: ["Mon-Fri: 9:00 AM - 6:00 PM", "Sat: 10:00 AM - 4:00 PM"],
-      description: "Closed on Sundays"
     }
   ];
 
@@ -195,7 +189,7 @@ export const Contact = () => {
                       value={formData.phone}
                       onChange={handleChange}
                       className={commonClassNameOfInput}
-                      placeholder="+1 (555) 123-4567"
+                      placeholder="+2519xxxxxxxx"
                       disabled={isSubmitting}
                     />
                   </div>

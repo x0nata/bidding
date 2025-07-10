@@ -15,16 +15,20 @@ export const HelpFAQ = () => {
       icon: <FaQuestionCircle className="text-primary" />,
       faqs: [
         {
-          question: "How do I create an account?",
-          answer: "Click the 'Register' button in the top right corner, fill in your details including name, email, and contact number, then verify your email address. All users can both buy and sell items on our platform - there's no need for separate buyer and seller accounts."
+          question: "How do I create an account on the Ethiopian bidding platform?",
+          answer: "Click the 'Register' button and provide your full name, email address, Ethiopian phone number, and create a secure password. You'll need to verify your email and phone number. Ethiopian residents must provide valid identification (ID card or passport) for account verification as required by Ethiopian regulations."
         },
         {
-          question: "What types of antiques can I find here?",
-          answer: "Horn of Antiques specializes in authenticated Ethiopian and international antiques including traditional furniture, jewelry, ceramics & porcelain, art & paintings, coins & currency, books & manuscripts, traditional textiles, glassware, silverware & metalwork, clocks & watches, musical instruments, toys & games, military collectibles, religious artifacts, and decorative arts. We particularly focus on items with Ethiopian cultural significance and heritage value."
+          question: "What documents do I need for account verification?",
+          answer: "Ethiopian citizens need a valid Ethiopian ID card or passport. Foreign residents require a passport and valid Ethiopian residence permit. Business accounts need additional documentation including business license and tax identification number (TIN) issued by Ethiopian authorities."
         },
         {
-          question: "How do I know if an item is authentic?",
-          answer: "Every item on our platform goes through our expert authentication process. We provide detailed provenance documentation and certificates of authenticity. Look for the verification badge on listings."
+          question: "Is the platform available in local languages?",
+          answer: "Yes, our platform supports Amharic, Oromo, and Tigrinya in addition to English. You can change your language preference in your account settings. Customer support is also available in these languages during Ethiopian business hours."
+        },
+        {
+          question: "What types of items can I bid on?",
+          answer: "Our platform features a wide variety of items including electronics, vehicles, real estate, art and collectibles, household items, business equipment, and traditional Ethiopian crafts. All items comply with Ethiopian import/export regulations and cultural heritage protection laws."
         }
       ]
     },
@@ -33,62 +37,62 @@ export const HelpFAQ = () => {
       icon: <FaGavel className="text-primary" />,
       faqs: [
         {
-          question: "How does the bidding process work?",
-          answer: "To place a bid, ensure you have sufficient Ethiopian Birr (ETB) in your account balance, then click 'Place Bid' on any active auction. Enter your bid amount and confirm. Our system supports both manual bidding and proxy bidding, where the system automatically bids for you up to your maximum amount. The highest bidder when the auction ends wins the item."
+          question: "How does the bidding process work in Ethiopia?",
+          answer: "Register and verify your account, then browse active auctions. To bid, ensure you have sufficient Ethiopian Birr (ETB) in your account balance. Click 'Place Bid', enter your amount, and confirm. All bids are legally binding under Ethiopian commercial law. The highest bidder when the auction closes wins the item."
         },
         {
-          question: "What is proxy bidding and how does it work?",
-          answer: "Proxy bidding allows you to set a maximum bid amount, and our system will automatically place bids on your behalf up to that limit. This ensures you don't miss out on items due to time zone differences or being away from your device. The system only bids the minimum amount needed to maintain your leading position."
+          question: "What are the bidding rules and regulations?",
+          answer: "All auctions follow Ethiopian commercial regulations and our platform terms. Bids are final and cannot be retracted. Minimum bid increments are set per item. Bidders must be 18+ years old and Ethiopian residents or have valid residence permits. False bidding or bid manipulation is prohibited and may result in legal action."
         },
         {
-          question: "Can I retract a bid?",
-          answer: "No, all bids are binding and cannot be retracted once placed. This policy ensures fairness for all participants and maintains the integrity of our auction process. Please bid carefully and only place bids for amounts you're prepared to pay in Ethiopian Birr."
+          question: "What is the auction schedule?",
+          answer: "Auctions run 24/7 but most activity occurs during Ethiopian business hours (8 AM - 6 PM EAT). Auction durations vary from 3-10 days. Popular items may have extended bidding periods. We observe Ethiopian public holidays when processing payments and deliveries."
         },
         {
-          question: "How long do auctions typically run?",
-          answer: "Most auctions run for 7 days, but sellers can choose durations of 3, 5, 7, or 10 days when listing their items. Timed auctions have automatic bid extensions - if a bid is placed in the final minutes, the auction extends to give other bidders a fair chance to respond."
+          question: "How do I know if my bid is winning?",
+          answer: "You'll receive real-time notifications via SMS and email when you're outbid. Your account dashboard shows all your active bids and their status. We recommend setting up mobile notifications to stay updated, especially in the final hours of auctions."
         },
         {
-          question: "What happens if I win an auction?",
-          answer: "Congratulations! You'll receive an email confirmation and have 7 days to complete payment in Ethiopian Birr through bank transfer. Once payment is confirmed, the seller will prepare your item for shipping and provide tracking information. All transactions are processed securely through our Ethiopian banking partners."
+          question: "What happens after I win an auction?",
+          answer: "You'll receive confirmation via SMS and email. Payment must be completed within 72 hours through Ethiopian banking channels. After payment verification, the seller has 5 business days to ship your item. You'll receive tracking information and delivery updates."
         },
         {
-          question: "Is Horn of Antiques available throughout Ethiopia?",
-          answer: "Yes, Horn of Antiques serves collectors throughout Ethiopia. Our online platform allows you to participate in auctions from anywhere in the country. We work with trusted shipping partners to deliver items safely to all major Ethiopian cities and regions."
+          question: "Are there any bidding limits or restrictions?",
+          answer: "New accounts have a 30-day bidding limit of 50,000 ETB. Verified accounts can bid up to 500,000 ETB per auction. Higher limits available for business accounts. Some items (vehicles, real estate) require additional verification. Cultural heritage items follow Ethiopian Heritage Authority guidelines."
         },
         {
-          question: "Do I need special knowledge to start collecting antiques?",
-          answer: "Not at all! While expertise helps, our platform is designed for collectors of all levels. Each item includes detailed descriptions, historical context, and authenticity certificates. Our customer support team and expert appraisers are always available to help guide new collectors in making informed decisions."
-        },
-        {
-          question: "What are reserve prices?",
-          answer: "Some auctions have reserve prices - a minimum amount the seller will accept. If bidding doesn't reach the reserve, the item won't be sold. Reserve amounts are not disclosed but you'll see if the reserve has been met."
+          question: "Can I bid from anywhere in Ethiopia?",
+          answer: "Yes, you can bid from any location within Ethiopia with internet access. Our platform works on mobile phones, tablets, and computers. We have partnerships with Ethiopian telecom providers for reliable access across all regions including rural areas."
         }
       ]
     },
     {
-      title: "Selling Items",
+      title: "Selling & Legal Requirements",
       icon: <FaShieldAlt className="text-primary" />,
       faqs: [
         {
-          question: "How do I list an item for auction?",
-          answer: "With your Horn of Antiques account, click 'Add Product' to start listing. Upload high-quality photos from multiple angles, provide detailed descriptions including historical context, and submit a Certificate of Authenticity (required for all listings). Include physical measurements, materials used, era/period, and provenance information. Our expert team will review and approve your listing before it goes live."
+          question: "What can I sell on the Ethiopian bidding platform?",
+          answer: "You can sell most legal items including electronics, vehicles, household goods, art, and collectibles. Prohibited items include weapons, drugs, counterfeit goods, and items restricted by Ethiopian law. Cultural heritage items require special permits from the Ethiopian Heritage Authority. All listings are reviewed before going live."
         },
         {
-          question: "What documentation do I need to sell antiques?",
-          answer: "A Certificate of Authenticity is mandatory for all antique listings on Horn of Antiques. This document should verify the item's age, origin, and authenticity. If you don't have one, our network of certified Ethiopian appraisers can help you obtain proper documentation for a fee."
+          question: "What documents do I need to sell items?",
+          answer: "For most items: proof of ownership, purchase receipts, and valid ID. Vehicles require title documents and traffic police clearance. Real estate needs title deeds and municipal clearances. Business equipment may require import/export documentation. Cultural items need Heritage Authority permits."
         },
         {
-          question: "What fees do sellers pay?",
-          answer: "Horn of Antiques charges a commission on successful sales only - no upfront listing fees. The commission rate varies by item category and final sale price, typically ranging from 10-15% for most antiques. All fees are clearly disclosed before you confirm your listing, and you'll see exactly what you'll receive after the sale."
+          question: "What are the seller fees and taxes?",
+          answer: "Platform commission is 8-12% of final sale price. Ethiopian VAT (15%) applies to applicable items. Income tax may apply based on Ethiopian tax law - consult a tax advisor. Business sellers need valid TIN numbers. All fees are clearly displayed before listing confirmation."
         },
         {
-          question: "How are starting prices and reserves determined?",
-          answer: "You set your own starting bid amount in Ethiopian Birr. You can also set an optional reserve price (minimum amount you'll accept). Our system suggests starting bids based on similar items, but the final decision is yours. Lower starting bids often generate more interest and competitive bidding."
+          question: "How do I price my items competitively?",
+          answer: "Research similar items on our platform and Ethiopian markets. Consider item condition, rarity, and demand. Start with lower opening bids to attract more bidders. Set realistic reserve prices. Our pricing tools provide market insights based on recent Ethiopian sales data."
         },
         {
-          question: "What happens after my item sells?",
-          answer: "Once your auction ends, you'll receive the buyer's payment (minus our commission) via bank transfer to your Ethiopian bank account within 3-5 business days. You'll then have 2 business days to carefully package and ship the item to the buyer with tracking information."
+          question: "What are my responsibilities as a seller?",
+          answer: "Provide accurate descriptions and photos, respond to buyer questions promptly, ship items within 5 business days after payment, provide tracking information, and honor all sale terms. Misrepresentation or fraud may result in account suspension and legal action under Ethiopian commercial law."
+        },
+        {
+          question: "How do I handle shipping and delivery?",
+          answer: "We partner with Ethiopian Postal Service, DHL Ethiopia, and local courier services. Sellers choose shipping methods and costs. Insurance is recommended for valuable items. Delivery confirmation is required. International shipping requires customs documentation and may have restrictions."
         }
       ]
     },
@@ -97,28 +101,32 @@ export const HelpFAQ = () => {
       icon: <FaCreditCard className="text-primary" />,
       faqs: [
         {
-          question: "What payment methods are accepted?",
-          answer: "Horn of Antiques uses a secure bank transfer system for all transactions in Ethiopian Birr (ETB). You can add funds to your account balance through bank transfers from any Ethiopian bank. We work with major Ethiopian banks including Commercial Bank of Ethiopia, Dashen Bank, Bank of Abyssinia, and others. All payments are processed securely through encrypted channels."
+          question: "What payment methods are available in Ethiopia?",
+          answer: "We accept Ethiopian Birr (ETB) through multiple channels: bank transfers from all Ethiopian banks (CBE, Dashen, Awash, Bank of Abyssinia, etc.), mobile money (M-Birr, HelloCash, Amole), and digital wallets. Credit/debit cards from Ethiopian banks are also accepted. All transactions comply with National Bank of Ethiopia regulations."
         },
         {
-          question: "How do I add money to my account?",
-          answer: "Click 'Add Balance' from your account dashboard or during the bidding process. Enter the amount in Ethiopian Birr (minimum 10 ETB, maximum 100,000 ETB per transaction), provide your bank account details, and confirm the transfer. Funds are typically available in your account within minutes for demo purposes, though real bank transfers may take 1-2 business days."
+          question: "How do I add funds to my bidding account?",
+          answer: "Go to 'Account Balance' in your dashboard. Choose from bank transfer, mobile money, or card payment. Minimum deposit is 100 ETB, maximum is 1,000,000 ETB per transaction. Bank transfers take 1-2 hours, mobile money is instant. All deposits are verified through Ethiopian banking systems."
         },
         {
-          question: "Is my payment information secure?",
-          answer: "Absolutely. Horn of Antiques uses bank-level security with industry-standard SSL encryption. We never store your complete banking information and all transactions are processed through secure, encrypted channels. Your financial data is protected according to Ethiopian banking regulations and international security standards."
+          question: "Is my financial information secure?",
+          answer: "Yes, we use bank-grade security certified by the National Bank of Ethiopia. All data is encrypted using international standards. We never store complete banking details. Our security measures comply with Ethiopian data protection laws and international best practices. Regular security audits ensure your information stays safe."
         },
         {
-          question: "What currencies do you accept?",
-          answer: "All transactions on Horn of Antiques are conducted in Ethiopian Birr (ETB). This ensures transparency and eliminates currency conversion fees for Ethiopian collectors. Prices, bids, and payments are all displayed and processed in ETB."
+          question: "What about taxes and fees?",
+          answer: "Platform fees range from 3-8% depending on payment method. Ethiopian VAT (15%) applies where required. Winners pay a 2% transaction fee. International payments may incur additional charges. All fees are clearly displayed before payment confirmation. Consult Ethiopian tax authorities for income tax obligations."
         },
         {
-          question: "What if there's a problem with my purchase?",
-          answer: "Horn of Antiques offers comprehensive buyer protection for authenticity disputes and misrepresented items. Contact our Ethiopian support team within 14 days of receiving your item if there are any issues. We work with certified appraisers to resolve disputes fairly and may offer full refunds for items that don't match their descriptions."
+          question: "How do I withdraw my earnings?",
+          answer: "Sellers can withdraw funds to any Ethiopian bank account within 24 hours. Minimum withdrawal is 50 ETB. Mobile money withdrawals are available for amounts up to 50,000 ETB. International transfers require additional documentation and take 3-5 business days through authorized foreign exchange dealers."
         },
         {
-          question: "How do refunds work?",
-          answer: "If a refund is approved, funds are returned to your Horn of Antiques account balance in Ethiopian Birr within 2-3 business days. You can then withdraw the funds to your Ethiopian bank account or use them for future purchases. Refund processing follows Ethiopian consumer protection guidelines."
+          question: "What if there's a payment dispute?",
+          answer: "Contact our Ethiopian support team immediately. We offer buyer protection for up to 30 days. Disputes are resolved according to Ethiopian consumer protection laws. We work with Ethiopian banks and authorities to investigate fraud. Mediation services are available through Ethiopian commercial arbitration centers."
+        },
+        {
+          question: "Are there any payment limits or restrictions?",
+          answer: "Daily transaction limits follow National Bank of Ethiopia guidelines: 100,000 ETB for individuals, 1,000,000 ETB for businesses. Foreign currency transactions require NBE approval. Some items (vehicles, real estate) have special payment procedures. Money laundering prevention measures apply to large transactions."
         }
       ]
     }
@@ -139,9 +147,9 @@ export const HelpFAQ = () => {
               Help & FAQ
             </Title>
             <Body className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Find answers to common questions about Horn of Antiques, Ethiopia's premier
-              antique auction platform. Can't find what you're looking for? Our Ethiopian
-              support team is here to help.
+              Find answers to common questions about Ethiopia's leading online bidding platform.
+              Get help with bidding, payments, regulations, and more. Our Ethiopian support team
+              is here to assist you in Amharic, English, and other local languages.
             </Body>
           </div>
 
@@ -202,25 +210,27 @@ export const HelpFAQ = () => {
               Still Need Help?
             </Title>
             <Body className="text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Our Ethiopian expert support team is here to help with any questions about auctions,
-              authentication, antique appraisals, or technical issues. We understand the local market
-              and typically respond within 24 hours during Ethiopian business hours.
+              Our Ethiopian customer support team is available to help with bidding questions,
+              payment issues, technical problems, and regulatory compliance. We provide support
+              in Amharic, English, Oromo, and Tigrinya during Ethiopian business hours.
             </Body>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <PrimaryButton className="bg-white text-primary hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold">
                 Contact Support
               </PrimaryButton>
               <PrimaryButton className="border-2 border-white text-white hover:bg-white hover:text-primary px-8 py-3 rounded-lg font-semibold">
-                Live Chat
+                Live Chat (Amharic/English)
               </PrimaryButton>
             </div>
-            
+
             <div className="mt-8 pt-8 border-t border-white/20">
               <Body className="text-white/80 text-sm">
-                <strong>Support Hours:</strong> Monday - Friday, 9:00 AM - 6:00 PM EAT (East Africa Time)<br />
-                <strong>Email:</strong> support@hornofantiques.com<br />
-                <strong>Phone:</strong> +251 11 123 4567<br />
-                <strong>WhatsApp:</strong> +251 91 234 5678
+                <strong>Support Hours:</strong> Monday - Saturday, 8:00 AM - 8:00 PM EAT (East Africa Time)<br />
+                <strong>Email:</strong> support@ethiopianbidding.com<br />
+                <strong>Phone:</strong> +251 11 551 2345 (Addis Ababa)<br />
+                <strong>Mobile/WhatsApp:</strong> +251 91 123 4567<br />
+                <strong>Telegram:</strong> @EthiopianBiddingSupport<br />
+                <strong>Emergency Line:</strong> +251 92 555 0000 (24/7 for urgent issues)
               </Body>
             </div>
           </div>

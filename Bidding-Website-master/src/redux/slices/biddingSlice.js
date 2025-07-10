@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { apiEndpoints } from '../../services/api';
-import { addInstantPurchaseNotification } from './notificationSlice';
 
 // Initial state
 const initialState = {
@@ -27,7 +26,8 @@ export const placeBid = createAsyncThunk(
 
       // Check if instant purchase was triggered
       if (response.data.instantPurchase && response.data.auctionEnded) {
-        // Dispatch instant purchase notification
+        // Dispatch instant purchase notification using dynamic import to avoid circular dependency
+        const { addInstantPurchaseNotification } = await import('./notificationSlice');
         dispatch(addInstantPurchaseNotification({
           productTitle: response.data.bid?.product?.title || 'Auction Item',
           finalPrice: response.data.finalPrice,

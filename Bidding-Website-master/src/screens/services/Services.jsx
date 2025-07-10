@@ -1,10 +1,9 @@
 import React from "react";
-import { Container, Title, Body, Caption, PrimaryButton } from "../../router";
+import { Container, Title, Body, Caption } from "../../router";
 import { RiAuctionFill } from "react-icons/ri";
-import { MdVerified, MdAssessment, MdSecurity } from "react-icons/md";
-import { FaGavel, FaSearch, FaShieldAlt, FaCertificate } from "react-icons/fa";
-import { GiTreasureMap, GiCrown } from "react-icons/gi";
-import { BiTime, BiSupport } from "react-icons/bi";
+import { MdVerified } from "react-icons/md";
+import { FaGavel, FaSearch } from "react-icons/fa";
+import { GiCrown } from "react-icons/gi";
 
 export const Services = () => {
   const mainServices = [
@@ -28,38 +27,7 @@ export const Services = () => {
     }
   ];
 
-  const additionalServices = [
-    {
-      icon: <GiTreasureMap size={40} className="text-purple-500" />,
-      title: "Provenance Research",
-      description: "Comprehensive historical research to verify the authenticity and ownership history of antiques."
-    },
-    {
-      icon: <FaCertificate size={40} className="text-orange-500" />,
-      title: "Certification",
-      description: "Official certificates of authenticity for all verified antique pieces in our collection."
-    },
-    {
-      icon: <MdAssessment size={40} className="text-red-500" />,
-      title: "Market Valuation",
-      description: "Professional market analysis and valuation services for insurance and estate purposes."
-    },
-    {
-      icon: <FaShieldAlt size={40} className="text-indigo-500" />,
-      title: "Secure Storage",
-      description: "Climate-controlled storage facilities for high-value items before and after auctions."
-    },
-    {
-      icon: <BiSupport size={40} className="text-teal-500" />,
-      title: "Expert Consultation",
-      description: "One-on-one consultations with our antique specialists for collecting guidance."
-    },
-    {
-      icon: <BiTime size={40} className="text-pink-500" />,
-      title: "Condition Reports",
-      description: "Detailed condition assessments with high-resolution photography and documentation."
-    }
-  ];
+
 
   const auctionTypes = [
     {
@@ -153,47 +121,6 @@ export const Services = () => {
                   </ul>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* Additional Services */}
-          <div className="mb-16">
-            <Title level={2} className="text-center mb-12 text-3xl font-bold text-gray-800">
-              Additional Services
-            </Title>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {additionalServices.map((service, index) => (
-                <div key={index} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-                  <div className="flex items-center mb-4">
-                    {service.icon}
-                    <Title level={5} className="ml-3 font-semibold text-gray-800">
-                      {service.title}
-                    </Title>
-                  </div>
-                  <Caption className="text-gray-600 leading-relaxed">
-                    {service.description}
-                  </Caption>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Call to Action */}
-          <div className="bg-primary text-white rounded-2xl p-8 md:p-12 text-center">
-            <Title level={2} className="mb-6 text-3xl font-bold">
-              Ready to Start Your Antique Journey?
-            </Title>
-            <Body className="text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Whether you're looking to buy, sell, or authenticate antiques, our expert team is here to help. 
-              Contact us today to learn more about our services.
-            </Body>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <PrimaryButton className="bg-white text-primary hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold">
-                Start Bidding
-              </PrimaryButton>
-              <PrimaryButton className="border-2 border-white text-white hover:bg-white hover:text-primary px-8 py-3 rounded-lg font-semibold">
-                Consign Items
-              </PrimaryButton>
             </div>
           </div>
         </Container>

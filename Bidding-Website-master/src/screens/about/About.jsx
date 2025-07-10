@@ -1,9 +1,8 @@
 import React from "react";
 import { Container, Title, Body, Caption } from "../../router";
-import { RiAuctionFill } from "react-icons/ri";
 import { GiCrown, GiTreasureMap } from "react-icons/gi";
-import { MdVerified, MdSecurity, MdSchool } from "react-icons/md";
-import { FaHistory, FaGavel, FaShieldAlt } from "react-icons/fa";
+import { MdVerified, MdSecurity } from "react-icons/md";
+import { FaHistory, FaGavel } from "react-icons/fa";
 
 export const About = () => {
   const features = [
@@ -120,28 +119,6 @@ export const About = () => {
                   </Caption>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* Team Section */}
-          <div className="text-center">
-            <Title level={2} className="mb-6 text-3xl font-bold text-gray-800">
-              Expert Team
-            </Title>
-            <Body className="text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8">
-              Our team consists of certified appraisers, art historians, and auction specialists with decades of combined experience 
-              in the antique and collectibles market. We're passionate about preserving history and helping collectors find their perfect pieces.
-            </Body>
-            <div className="flex justify-center space-x-4">
-              <div className="bg-white rounded-full p-4 shadow-lg">
-                <MdSchool size={40} className="text-primary" />
-              </div>
-              <div className="bg-white rounded-full p-4 shadow-lg">
-                <FaShieldAlt size={40} className="text-green" />
-              </div>
-              <div className="bg-white rounded-full p-4 shadow-lg">
-                <RiAuctionFill size={40} className="text-blue-500" />
-              </div>
             </div>
           </div>
         </Container>

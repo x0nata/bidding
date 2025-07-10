@@ -255,20 +255,18 @@ export const Footer = () => {
                 <p className="mt-1">Connecting Ethiopian collectors with authentic treasures.</p>
               </div>
               <div className="flex items-center gap-6 mt-4 md:mt-0">
-                <Link
-                  to="/privacy"
-                  className="text-gray-300 hover:text-green transition-colors duration-300 text-sm"
-                  aria-label="Read our privacy policy"
+                <span
+                  className="text-gray-300 hover:text-green transition-colors duration-300 text-sm cursor-pointer"
+                  aria-label="Privacy policy information"
                 >
                   Privacy Policy
-                </Link>
-                <Link
-                  to="/terms"
-                  className="text-gray-300 hover:text-green transition-colors duration-300 text-sm"
-                  aria-label="Read our terms of service"
+                </span>
+                <span
+                  className="text-gray-300 hover:text-green transition-colors duration-300 text-sm cursor-pointer"
+                  aria-label="Terms of service information"
                 >
                   Terms of Service
-                </Link>
+                </span>
                 <Link
                   to="/help"
                   className="text-gray-300 hover:text-green transition-colors duration-300 text-sm"

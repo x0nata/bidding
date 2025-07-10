@@ -2603,9 +2603,6 @@ video {
   background-color: rgb(220 38 38 / 1);
   background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));
 }
-.bg-slate-950\/20{
-  background-color: rgb(2 6 23 / 0.2);
-}
 .bg-transparent{
   background-color: transparent;
 }
@@ -3044,9 +3041,6 @@ video {
 .text-6xl{
   font-size: 3.75rem;
   line-height: 1;
-}
-.text-\[12px\]{
-  font-size: 12px;
 }
 .text-\[15px\]{
   font-size: 15px;
@@ -3535,9 +3529,6 @@ video {
   transition-property: transform;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
-}
-.delay-200{
-  transition-delay: 200ms;
 }
 .duration-100{
   transition-duration: 100ms;
