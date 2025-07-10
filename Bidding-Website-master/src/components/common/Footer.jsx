@@ -72,12 +72,7 @@ export const Footer = () => {
       url: process.env.REACT_APP_TWITTER_URL || "https://twitter.com/hornofantiques",
       color: "hover:bg-blue-400",
     },
-    {
-      name: "LinkedIn",
-      icon: <FaLinkedin size={22} />,
-      url: process.env.REACT_APP_LINKEDIN_URL || "https://linkedin.com/company/hornofantiques",
-      color: "hover:bg-blue-700",
-    },
+
   ];
 
   return (
@@ -295,16 +290,7 @@ export const Footer = () => {
           </Container>
         </div>
 
-        {/* Discrete Admin Link (backup) */}
-        <div className="absolute bottom-4 right-4">
-          <Link
-            to="/admin/login"
-            className="text-xs text-gray-400 hover:text-green transition-colors duration-300 opacity-50 hover:opacity-100"
-            aria-label="Admin access"
-          >
-            Admin
-          </Link>
-        </div>
+
       </footer>
     </>
   );

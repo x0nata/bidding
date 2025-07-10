@@ -45,7 +45,8 @@ export const adminUserApi = {
   // Get all users
   getAllUsers: async () => {
     try {
-      const response = await adminApi.get('/users/users');
+      // ✅ FIXED: Correct backend endpoint path
+      const response = await adminApi.get('/api/users/users');
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to fetch users';
@@ -55,7 +56,8 @@ export const adminUserApi = {
   // Update user (suspend/activate, role change, etc.)
   updateUser: async (userId, updateData) => {
     try {
-      const response = await adminApi.put(`/users/${userId}`, updateData);
+      // ✅ FIXED: Correct backend endpoint path
+      const response = await adminApi.put(`/api/users/admin/${userId}`, updateData);
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to update user';
@@ -65,7 +67,8 @@ export const adminUserApi = {
   // Delete user
   deleteUser: async (userId) => {
     try {
-      const response = await adminApi.delete(`/users/${userId}`);
+      // ✅ FIXED: Correct backend endpoint path
+      const response = await adminApi.delete(`/api/users/admin/${userId}`);
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to delete user';
@@ -75,7 +78,8 @@ export const adminUserApi = {
   // Get user details
   getUserDetails: async (userId) => {
     try {
-      const response = await adminApi.get(`/users/${userId}`);
+      // ✅ FIXED: Correct backend endpoint path
+      const response = await adminApi.get(`/api/users/admin/${userId}`);
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to fetch user details';
@@ -101,7 +105,8 @@ export const adminProductApi = {
   // Get all products for admin
   getAllProducts: async () => {
     try {
-      const response = await adminApi.get('/product/admin/products');
+      // ✅ FIXED: Correct backend endpoint path
+      const response = await adminApi.get('/api/product/admin/products');
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to fetch products';
@@ -111,7 +116,8 @@ export const adminProductApi = {
   // Approve/reject product
   updateProductStatus: async (productId, status, comments = '') => {
     try {
-      const response = await adminApi.patch(`/product/admin/product-verified/${productId}`, {
+      // ✅ FIXED: Correct backend endpoint path
+      const response = await adminApi.patch(`/api/product/admin/product-verified/${productId}`, {
         status,
         comments
       });
@@ -139,7 +145,8 @@ export const adminAuctionApi = {
   // Get all auctions with filtering and pagination
   getAllAuctions: async (params = {}) => {
     try {
-      const response = await adminApi.get('/product/admin/auctions', { params });
+      // ✅ FIXED: Correct backend endpoint path
+      const response = await adminApi.get('/api/product/admin/auctions', { params });
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to fetch auctions';
@@ -149,7 +156,8 @@ export const adminAuctionApi = {
   // Update auction details
   updateAuction: async (auctionId, updateData) => {
     try {
-      const response = await adminApi.put(`/product/admin/auctions/${auctionId}`, updateData);
+      // ✅ FIXED: Correct backend endpoint path
+      const response = await adminApi.put(`/api/product/admin/auctions/${auctionId}`, updateData);
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to update auction';

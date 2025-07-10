@@ -81,7 +81,8 @@ export const verifyProductExists = async (id) => {
 // Verify product appears in listings (without showing error toast)
 export const verifyProductInListings = async (id) => {
   try {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/product`);
+    // ✅ FIXED: Added /api prefix to match backend routes
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/product`);
     const products = response.products || [];
     return products.some(product => product._id === id);
   } catch (error) {
@@ -91,7 +92,8 @@ export const verifyProductInListings = async (id) => {
 
 export const fetchAuctionDetails = async (auctionId) => {
   try {
-    return await fetchWithErrorHandling(`${API_BASE_URL}/product/auctions/${auctionId}/details`);
+    // ✅ FIXED: Added /api prefix to match backend routes
+    return await fetchWithErrorHandling(`${API_BASE_URL}/api/product/auctions/${auctionId}/details`);
   } catch (error) {
     toast.error('Failed to load auction details');
     throw error;
@@ -100,7 +102,8 @@ export const fetchAuctionDetails = async (auctionId) => {
 
 export const fetchUserProfile = async () => {
   try {
-    return await fetchWithErrorHandling(`${API_BASE_URL}/user/profile`);
+    // ✅ FIXED: Added /api prefix to match backend routes
+    return await fetchWithErrorHandling(`${API_BASE_URL}/api/users/getuser`);
   } catch (error) {
     toast.error('Failed to load user profile');
     throw error;
@@ -109,7 +112,8 @@ export const fetchUserProfile = async () => {
 
 export const fetchWatchlist = async () => {
   try {
-    return await fetchWithErrorHandling(`${API_BASE_URL}/user/watchlist`);
+    // ✅ FIXED: Added /api prefix - Note: This endpoint may not exist in backend
+    return await fetchWithErrorHandling(`${API_BASE_URL}/api/users/watchlist`);
   } catch (error) {
     toast.error('Failed to load watchlist');
     throw error;
@@ -119,7 +123,8 @@ export const fetchWatchlist = async () => {
 export const fetchBidHistory = async (params = {}) => {
   try {
     const queryParams = new URLSearchParams(params);
-    return await fetchWithErrorHandling(`${API_BASE_URL}/bid/history?${queryParams}`);
+    // ✅ FIXED: Use correct bidding endpoint
+    return await fetchWithErrorHandling(`${API_BASE_URL}/api/bidding/user/activity?${queryParams}`);
   } catch (error) {
     toast.error('Failed to load bid history');
     throw error;
@@ -129,7 +134,8 @@ export const fetchBidHistory = async (params = {}) => {
 export const fetchSalesHistory = async (params = {}) => {
   try {
     const queryParams = new URLSearchParams(params);
-    return await fetchWithErrorHandling(`${API_BASE_URL}/user/sales?${queryParams}`);
+    // ✅ FIXED: Use dedicated sales history endpoint
+    return await fetchWithErrorHandling(`${API_BASE_URL}/api/users/sales-history?${queryParams}`);
   } catch (error) {
     toast.error('Failed to load sales history');
     throw error;
@@ -140,7 +146,8 @@ export const fetchSalesHistory = async (params = {}) => {
 export const fetchAllUsers = async (params = {}) => {
   try {
     const queryParams = new URLSearchParams(params);
-    return await fetchWithErrorHandling(`${API_BASE_URL}/admin/users?${queryParams}`);
+    // ✅ FIXED: Use correct admin users endpoint
+    return await fetchWithErrorHandling(`${API_BASE_URL}/api/users/users?${queryParams}`);
   } catch (error) {
     toast.error('Failed to load users');
     throw error;
@@ -150,7 +157,8 @@ export const fetchAllUsers = async (params = {}) => {
 export const fetchAllAuctions = async (params = {}) => {
   try {
     const queryParams = new URLSearchParams(params);
-    return await fetchWithErrorHandling(`${API_BASE_URL}/admin/auctions?${queryParams}`);
+    // ✅ FIXED: Use correct admin auctions endpoint
+    return await fetchWithErrorHandling(`${API_BASE_URL}/api/product/admin/auctions?${queryParams}`);
   } catch (error) {
     toast.error('Failed to load auctions');
     throw error;
@@ -159,7 +167,8 @@ export const fetchAllAuctions = async (params = {}) => {
 
 export const fetchDashboardStats = async () => {
   try {
-    return await fetchWithErrorHandling(`${API_BASE_URL}/admin/dashboard/stats`);
+    // ✅ FIXED: Use available admin endpoint for income estimation
+    return await fetchWithErrorHandling(`${API_BASE_URL}/api/users/estimate-income`);
   } catch (error) {
     toast.error('Failed to load dashboard statistics');
     throw error;
@@ -191,11 +200,12 @@ export const submitProductListing = async (formData) => {
 
 export const submitBid = async (auctionId, bidAmount) => {
   try {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/bid`, {
+    // ✅ FIXED: Use correct bidding endpoint
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/bidding`, {
       method: 'POST',
       body: JSON.stringify({ auctionId, bidAmount })
     });
-    
+
     toast.success('Bid placed successfully!');
     return { success: true, data: response };
   } catch (error) {

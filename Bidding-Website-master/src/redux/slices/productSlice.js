@@ -46,7 +46,8 @@ export const getAllProducts = createAsyncThunk(
   async (params = {}, { rejectWithValue }) => {
     try {
       const queryParams = new URLSearchParams(params).toString();
-      const response = await axios.get(`${API_URL}/product?${queryParams}`);
+      // ✅ FIXED: Added /api prefix to match backend routes
+      const response = await axios.get(`${API_URL}/api/product?${queryParams}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch products');
@@ -224,7 +225,8 @@ export const getWonProducts = createAsyncThunk(
   'product/getWonProducts',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/product/won`);
+      // ✅ FIXED: Correct backend endpoint path
+      const response = await axios.get(`${API_URL}/api/product/won-products`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch won products');
@@ -236,7 +238,8 @@ export const getActiveAuctions = createAsyncThunk(
   'product/getActiveAuctions',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/product/auctions/active`);
+      // ✅ FIXED: Added /api prefix to match backend routes
+      const response = await axios.get(`${API_URL}/api/product/auctions/active`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch active auctions');

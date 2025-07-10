@@ -102,40 +102,19 @@ export const AdminLogin = () => {
 
   return (
     <>
-      <section className="regsiter pt-16 relative">
-        <div className="bg-green w-96 h-96 rounded-full opacity-20 blur-3xl absolute top-2/3"></div>
-        <div className="bg-[#241C37] pt-8 h-[40vh] relative content">
-          <Container>
-            <div>
-              <Title level={3} className="text-white">
-                Admin Access - Antique Auction System
-              </Title>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Link to="/" className="text-green font-normal text-xl hover:text-primary transition-colors cursor-pointer flex items-center gap-2">
-                    <HiHome className="text-xl" />
-                    Home
-                  </Link>
-                  <Title level={5} className="text-white font-normal text-xl">
-                    /
-                  </Title>
-                  <Title level={5} className="text-white font-normal text-xl">
-                    Admin Login
-                  </Title>
-                </div>
-                <Link
-                  to="/"
-                  className="bg-green hover:bg-primary text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2 font-medium"
-                >
-                  <HiArrowLeft className="text-lg" />
-                  Back to Home
-                </Link>
-              </div>
-            </div>
-          </Container>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="bg-white shadow-s3 w-1/3 m-auto my-16 p-8 rounded-xl">
+      <section className="pt-16 relative min-h-screen flex items-center justify-center bg-gray-50">
+        <form onSubmit={handleSubmit} className="bg-white shadow-s3 w-1/3 m-auto p-8 rounded-xl">
+          {/* Back to Home Link */}
+          <div className="mb-6">
+            <Link
+              to="/"
+              className="text-green hover:text-primary transition-colors flex items-center gap-2 text-sm font-medium"
+            >
+              <HiArrowLeft className="text-lg" />
+              Back to Home
+            </Link>
+          </div>
+
           <div className="text-center">
             <Title level={5}>Admin Dashboard Access</Title>
             <p className="mt-2 text-lg">

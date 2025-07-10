@@ -24,7 +24,8 @@ export const getAllAuctions = createAsyncThunk(
   async (params = {}, { rejectWithValue }) => {
     try {
       const queryParams = new URLSearchParams(params).toString();
-      const response = await axios.get(`${API_URL}/auction?${queryParams}`);
+      // ✅ FIXED: Use product auctions endpoint since there's no separate auction route
+      const response = await axios.get(`${API_URL}/api/product/auctions/active?${queryParams}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch auctions');
@@ -36,7 +37,8 @@ export const getAuctionById = createAsyncThunk(
   'auction/getAuctionById',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/auction/${id}`);
+      // ✅ FIXED: Use product endpoint for auction details
+      const response = await axios.get(`${API_URL}/api/product/auctions/${id}/details`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch auction');

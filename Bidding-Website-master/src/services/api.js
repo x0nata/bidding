@@ -19,10 +19,10 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // Add auth token if available
+    // Add auth token if available - use x-auth-token to match backend expectations
     const token = localStorage.getItem('token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers['x-auth-token'] = token;
     }
     return config;
   },
@@ -93,26 +93,17 @@ export const apiEndpoints = {
     placeBid: (data) => api.post('/api/bidding', data),
     getBidsForProduct: (productId) => api.get(`/api/bidding/${productId}`),
     getUserBids: () => api.get('/api/bidding/user/activity'),
-    setProxyBid: (data) => api.post('/api/bidding/proxy', data),
-    cancelProxyBid: (productId) => api.delete(`/api/bidding/proxy/${productId}`),
     getBidHistory: (productId) => api.get(`/api/bidding/${productId}`),
     getTotalActiveBidsCount: () => api.get('/api/bidding/stats/active-bids-count'),
-    submitDeliveryInfo: (productId, data) => api.post(`/api/auctions/${productId}/delivery-info`, data),
+    // Note: Proxy bidding and delivery info endpoints removed as they don't exist in backend
   },
 
-  // Auctions
+  // Auctions (handled through product routes in backend)
   auctions: {
-    getAll: (params) => api.get('/auction', { params }),
-    getById: (id) => api.get(`/auction/${id}`),
-    create: (data) => api.post('/auction', data),
-    update: (id, data) => api.put(`/auction/${id}`, data),
-    delete: (id) => api.delete(`/auction/${id}`),
-    getLive: () => api.get('/auction/live'),
-    getUpcoming: () => api.get('/auction/upcoming'),
-    getEnded: () => api.get('/auction/ended'),
-    start: (id) => api.post(`/auction/${id}/start`),
-    end: (id) => api.post(`/auction/${id}/end`),
-    endInstantPurchase: (id, data) => api.post(`/auction/${id}/end-instant-purchase`, data),
+    getActive: () => api.get('/api/product/auctions/active'),
+    getUpcoming: () => api.get('/api/product/auctions/upcoming'),
+    getDetails: (id) => api.get(`/api/product/auctions/${id}/details`),
+    // Note: Other auction operations are handled through product endpoints
   },
 
   // Notifications

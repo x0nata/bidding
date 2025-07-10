@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   LoginAsSeller,
@@ -211,18 +211,7 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route
-            path="/admin/income"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <DashboardLayout>
-                    <Income />
-                  </DashboardLayout>
-                </Layout>
-              </PrivateRoute>
-            }
-          />
+          {/* ✅ MOVED: This route moved to admin section with proper AdminRoute protection */}
           <Route
             path="/product/update/:id"
             element={
@@ -275,42 +264,7 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route
-            path="/product/admin"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <DashboardLayout>
-                    <AdminProductList />
-                  </DashboardLayout>
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/product/admin/update/:id"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <DashboardLayout>
-                    <UpdateProductByAdmin />
-                  </DashboardLayout>
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/userlist"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <DashboardLayout>
-                    <UserList />
-                  </DashboardLayout>
-                </Layout>
-              </PrivateRoute>
-            }
-          />
+          {/* ✅ MOVED: These admin routes moved to admin section with proper AdminRoute protection */}
           <Route
             path="/winning-products"
             element={
@@ -419,6 +373,92 @@ function App() {
             }
           />
 
+          {/* ✅ ADDED: Missing Admin Routes */}
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute>
+                <Layout>
+                  <DashboardLayout>
+                    <UserList />
+                  </DashboardLayout>
+                </Layout>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/products"
+            element={
+              <AdminRoute>
+                <Layout>
+                  <DashboardLayout>
+                    <AdminProductList />
+                  </DashboardLayout>
+                </Layout>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/categories"
+            element={
+              <AdminRoute>
+                <Layout>
+                  <DashboardLayout>
+                    <Catgeorylist />
+                  </DashboardLayout>
+                </Layout>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/categories/create"
+            element={
+              <AdminRoute>
+                <Layout>
+                  <DashboardLayout>
+                    <CreateCategory />
+                  </DashboardLayout>
+                </Layout>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/categories/update/:id"
+            element={
+              <AdminRoute>
+                <Layout>
+                  <DashboardLayout>
+                    <UpdateCategory />
+                  </DashboardLayout>
+                </Layout>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/products/update/:id"
+            element={
+              <AdminRoute>
+                <Layout>
+                  <DashboardLayout>
+                    <UpdateProductByAdmin />
+                  </DashboardLayout>
+                </Layout>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/income"
+            element={
+              <AdminRoute>
+                <Layout>
+                  <DashboardLayout>
+                    <Income />
+                  </DashboardLayout>
+                </Layout>
+              </AdminRoute>
+            }
+          />
+
           {/* Catch-all route for 404 - Must be last */}
           <Route
             path="*"
@@ -436,13 +476,14 @@ function App() {
           position="top-right"
           autoClose={5000}
           hideProgressBar={false}
-          newestOnTop={false}
+          newestOnTop={true}
           closeOnClick
           rtl={false}
           pauseOnFocusLoss
           draggable
           pauseOnHover
           theme="light"
+          transition={Slide}
         />
 
         {/* Custom notification system */}

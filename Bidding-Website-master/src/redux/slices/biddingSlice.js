@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../../services/api';
+import { apiEndpoints } from '../../services/api';
 import { addInstantPurchaseNotification } from './notificationSlice';
 
 // Initial state
@@ -23,22 +23,32 @@ export const placeBid = createAsyncThunk(
         price: bidData.amount || bidData.price,
         bidType: bidData.bidType || 'Manual'
       };
-      const response = await api.post('/bidding', payload);
+      const response = await apiEndpoints.bidding.placeBid(payload);
 
       // Check if instant purchase was triggered
       if (response.data.instantPurchase && response.data.auctionEnded) {
         // Dispatch instant purchase notification
         dispatch(addInstantPurchaseNotification({
-          productTitle: response.data.product?.title || 'Auction Item',
+          productTitle: response.data.bid?.product?.title || 'Auction Item',
           finalPrice: response.data.finalPrice,
           productId: bidData.productId,
-          winner: response.data.winner
+          winner: response.data.bid?.user
         }));
       }
 
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to place bid');
+      // Extract detailed error information from backend
+      const errorData = error.response?.data;
+      if (errorData) {
+        return rejectWithValue({
+          message: errorData.message || 'Failed to place bid',
+          error: errorData.error,
+          code: errorData.code,
+          suggestions: errorData.suggestions
+        });
+      }
+      return rejectWithValue({ message: 'Failed to place bid' });
     }
   }
 );
@@ -47,7 +57,7 @@ export const getBidsForProduct = createAsyncThunk(
   'bidding/getBidsForProduct',
   async (productId, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/bidding/${productId}`);
+      const response = await apiEndpoints.bidding.getBidsForProduct(productId);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch bids');
@@ -59,7 +69,7 @@ export const getUserBids = createAsyncThunk(
   'bidding/getUserBids',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get('/bidding/user/activity');
+      const response = await apiEndpoints.bidding.getUserBids();
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch user bids');

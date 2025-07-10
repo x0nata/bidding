@@ -13,19 +13,16 @@ const NotificationSystem = () => {
       if (!notification.processed) {
         // Show toast notification
         const toastOptions = {
-          position: "top-right",
-          autoClose: notification.autoHide ? 5000 : false,
-          hideProgressBar: false,
+          autoClose: 5000, // Always auto-close after 5 seconds
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
           onClose: () => {
             dispatch(markAsRead(notification.id));
-            if (notification.autoHide) {
-              setTimeout(() => {
-                dispatch(removeNotification(notification.id));
-              }, 1000);
-            }
+            // Remove notification after close
+            setTimeout(() => {
+              dispatch(removeNotification(notification.id));
+            }, 100);
           },
         };
 

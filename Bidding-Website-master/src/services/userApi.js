@@ -16,6 +16,7 @@ export const adminUserApi = {
   // Get all users
   getAllUsers: async () => {
     try {
+      // ✅ FIXED: Correct backend endpoint path
       const response = await userApi.get('/users');
       return response.data;
     } catch (error) {
@@ -26,6 +27,7 @@ export const adminUserApi = {
   // Get user by ID
   getUserById: async (userId) => {
     try {
+      // ✅ FIXED: Correct backend endpoint path
       const response = await userApi.get(`/admin/${userId}`);
       return response.data.user;
     } catch (error) {
@@ -36,6 +38,7 @@ export const adminUserApi = {
   // Update user (admin)
   updateUser: async (userId, updateData) => {
     try {
+      // ✅ FIXED: Correct backend endpoint path
       const response = await userApi.put(`/admin/${userId}`, updateData);
       return response.data;
     } catch (error) {

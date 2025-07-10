@@ -72,7 +72,7 @@ const notificationSlice = createSlice({
         timestamp: new Date().toISOString(),
         read: false,
         processed: false,
-        autoHide: false,
+        autoHide: true,
       };
       state.notifications.unshift(notification);
       state.unreadCount += 1;
@@ -115,7 +115,7 @@ const notificationSlice = createSlice({
         timestamp: new Date().toISOString(),
         read: false,
         processed: false,
-        autoHide: false,
+        autoHide: true,
       };
       state.notifications.unshift(notification);
       state.unreadCount += 1;
@@ -130,7 +130,7 @@ const notificationSlice = createSlice({
         timestamp: new Date().toISOString(),
         read: false,
         processed: false,
-        autoHide: false,
+        autoHide: true,
       };
       state.notifications.unshift(notification);
       state.unreadCount += 1;

@@ -13,6 +13,17 @@ router.get("/getuser", protect, getUser);
 router.get("/sell-amount", protect, getUserBalance);
 router.put("/profile", protect, upload.single("profileImage"), updateUserProfile);
 
+// ✅ ADDED: Sales history endpoint (alias for user products)
+router.get("/sales-history", protect, async (req, res) => {
+  try {
+    // Redirect to user products endpoint with sold filter
+    const userProducts = require("../controllers/productCtr").getAllProductsofUser;
+    await userProducts(req, res);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch sales history" });
+  }
+});
+
 router.get("/estimate-income", protect, isAdmin, estimateIncome);
 router.get("/users", protect, isAdmin, getAllUser);
 

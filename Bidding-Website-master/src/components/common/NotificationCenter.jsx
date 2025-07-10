@@ -28,16 +28,8 @@ const NotificationCenter = () => {
   const [showWinnerModal, setShowWinnerModal] = useState(false);
   const [selectedWinnerNotification, setSelectedWinnerNotification] = useState(null);
 
-  // Auto-hide notifications after a delay
-  useEffect(() => {
-    const autoHideNotifications = notifications.filter(n => n.autoHide && !n.read);
-    
-    autoHideNotifications.forEach(notification => {
-      setTimeout(() => {
-        dispatch(removeNotification(notification.id));
-      }, 5000); // Auto-hide after 5 seconds
-    });
-  }, [notifications, dispatch]);
+  // Note: Auto-dismiss is handled by the NotificationSystem component for toast notifications
+  // The NotificationCenter only manages the dropdown display
 
   const getNotificationIcon = (type) => {
     switch (type) {

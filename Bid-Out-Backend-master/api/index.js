@@ -704,9 +704,17 @@ app.get("/debug/routes", (req, res) => {
         getActiveAuctions: "GET /api/product/auctions/active",
         getUpcomingAuctions: "GET /api/product/auctions/upcoming",
         getUserProducts: "GET /api/product/user",
+        getWonProducts: "GET /api/product/won-products",
         create: "POST /api/product",
         update: "PUT /api/product/:id",
         delete: "DELETE /api/product/:id"
+      },
+      users: {
+        getProfile: "GET /api/users/getuser",
+        updateProfile: "PUT /api/users/profile",
+        getSalesHistory: "GET /api/users/sales-history",
+        getBalance: "GET /api/users/sell-amount",
+        getAllUsers: "GET /api/users/users (admin only)"
       },
       categories: {
         getAll: "GET /api/category",

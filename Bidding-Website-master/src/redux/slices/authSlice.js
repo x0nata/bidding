@@ -7,19 +7,7 @@ const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
 // Configure axios defaults
 axios.defaults.withCredentials = true;
 
-// Add token to requests if available
-axios.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers['x-auth-token'] = token;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+// Note: Token handling is done in api.js interceptor to avoid conflicts
 
 // Initialize state from localStorage if available
 const getInitialState = () => {

@@ -129,6 +129,14 @@ const biddingErrorHandler = (err, req, res, next) => {
 const validateBiddingRequest = async (req, res, next) => {
   try {
     const { productId, price } = req.body;
+
+    // Check if user is authenticated (this middleware runs after protect middleware)
+    if (!req.user || !req.user.id) {
+      // If user is not authenticated, the protect middleware should have already handled this
+      // But if we reach here, pass to next middleware to handle the error
+      return next();
+    }
+
     const userId = req.user.id;
 
     // Basic validation
