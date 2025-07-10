@@ -3,7 +3,7 @@ import { Title, Caption } from '../common/Design';
 import { MdGavel, MdTrendingUp } from 'react-icons/md';
 import { FiRefreshCw, FiActivity } from 'react-icons/fi';
 import { apiEndpoints } from '../../services/api';
-import websocketService from '../../services/websocket';
+// import websocketService from '../../services/websocket'; // Temporarily disabled
 
 export const ActiveBidsCounter = ({ 
   className = "",
@@ -58,24 +58,27 @@ export const ActiveBidsCounter = ({
     setLastUpdate(new Date());
   }, []);
 
-  // Setup WebSocket listeners
+  // Setup WebSocket listeners (temporarily disabled)
   useEffect(() => {
-    if (websocketService.isSocketConnected()) {
-      // Listen for active bids count updates (primary)
-      websocketService.socket.on('active_bids_count_update', handleActiveBidsCountUpdate);
+    // WebSocket temporarily disabled
+    return;
 
-      // Listen for individual bid events (fallback)
-      websocketService.socket.on('new_bid', handleBidUpdate);
-      websocketService.socket.on('bid_success', handleBidUpdate);
+    // if (websocketService.isSocketConnected()) {
+    //   // Listen for active bids count updates (primary)
+    //   websocketService.socket.on('active_bids_count_update', handleActiveBidsCountUpdate);
 
-      return () => {
-        if (websocketService.socket) {
-          websocketService.socket.off('active_bids_count_update', handleActiveBidsCountUpdate);
-          websocketService.socket.off('new_bid', handleBidUpdate);
-          websocketService.socket.off('bid_success', handleBidUpdate);
-        }
-      };
-    }
+    //   // Listen for individual bid events (fallback)
+    //   websocketService.socket.on('new_bid', handleBidUpdate);
+    //   websocketService.socket.on('bid_success', handleBidUpdate);
+
+    //   return () => {
+    //     if (websocketService.socket) {
+    //       websocketService.socket.off('active_bids_count_update', handleActiveBidsCountUpdate);
+    //       websocketService.socket.off('new_bid', handleBidUpdate);
+    //       websocketService.socket.off('bid_success', handleBidUpdate);
+    //     }
+    //   };
+    // }
   }, [handleActiveBidsCountUpdate, handleBidUpdate]);
 
   // Initial data fetch

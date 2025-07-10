@@ -9,7 +9,7 @@ import { BsGraphUp } from 'react-icons/bs';
 import { showSuccess, showError } from '../../redux/slices/notificationSlice';
 import { adminAuctionApi } from '../../services/adminApi';
 import { apiEndpoints } from '../../services/api';
-import websocketService from '../../services/websocket';
+// import websocketService from '../../services/websocket'; // Temporarily disabled
 
 // Utility functions for status display
 const getStatusColor = (status) => {

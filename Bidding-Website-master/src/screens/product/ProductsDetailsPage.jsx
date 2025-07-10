@@ -13,7 +13,7 @@ import { getProductById, getAuctionDetails } from "../../redux/slices/productSli
 import { placeBid, getBidsForProduct } from "../../redux/slices/biddingSlice";
 import { showSuccess, showError } from "../../redux/slices/notificationSlice";
 import { apiEndpoints } from "../../services/api";
-import websocketService from "../../services/websocket";
+// import websocketService from "../../services/websocket"; // Temporarily disabled
 import BiddingInterface from "../../components/bidding/BiddingInterface";
 import BidHistory from "../../components/bidding/BidHistory";
 import CountdownTimer from "../../components/bidding/CountdownTimer";

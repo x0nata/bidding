@@ -9,7 +9,7 @@ import { EmptyState } from '../common/EmptyState';
 import { FiClock, FiTrendingUp, FiArrowRight, FiRefreshCw } from 'react-icons/fi';
 import { MdGavel } from 'react-icons/md';
 import { useProductUpdates } from '../../hooks/useProductUpdates';
-import websocketService from '../../services/websocket';
+// import websocketService from '../../services/websocket'; // Temporarily disabled
 
 export const RecentlyAddedAuctions = () => {
   const dispatch = useDispatch();
@@ -150,15 +150,14 @@ export const RecentlyAddedAuctions = () => {
     }
   }, [Array.isArray(userProducts) ? userProducts.length : 0]);
 
-  // Setup WebSocket listeners for real-time updates
+  // Setup WebSocket listeners for real-time updates (temporarily disabled)
   useEffect(() => {
     const setupWebSocketListeners = () => {
-      if (!websocketService.isSocketConnected()) {
-        setWebsocketConnected(false);
-        return;
-      }
+      // WebSocket temporarily disabled
+      setWebsocketConnected(false);
+      return;
 
-      setWebsocketConnected(true);
+      // setWebsocketConnected(true);
 
       // Listen for new product/auction events
       const handleNewProduct = (productData) => {

@@ -49,7 +49,7 @@ import { UserList } from "./admin/UserList";
 import SearchResults from "./components/search/SearchResults";
 import { checkAuthStatus } from "./redux/slices/authSlice";
 import { getAllCategories } from "./redux/slices/categorySlice";
-import websocketService from "./services/websocket";
+// import websocketService from "./services/websocket"; // Temporarily disabled
 import OnboardingCheck from "./components/common/OnboardingCheck";
 import NotificationSystem from "./components/common/NotificationSystem";
 import AdminRoute from "./components/common/AdminRoute";
@@ -72,19 +72,12 @@ function App() {
     // Load categories
     dispatch(getAllCategories());
 
-    // Connect to WebSocket (async)
-    const connectWebSocket = async () => {
-      try {
-        await websocketService.connect();
-      } catch (error) {
-        console.warn('Failed to connect WebSocket:', error);
-      }
-    };
-    connectWebSocket();
+    // WebSocket temporarily disabled for debugging
+    console.log('WebSocket connection temporarily disabled');
 
     // Cleanup on unmount
     return () => {
-      websocketService.disconnect();
+      // websocketService.disconnect(); // Temporarily disabled
     };
   }, [dispatch]);
 
