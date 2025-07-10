@@ -237,6 +237,9 @@ const AntiqueListingForm = () => {
       // Handle successful submission
       await handleSuccessfulSubmission(result.data, result.metadata);
 
+      // Return success result for useFormSubmission hook
+      return { success: true, data: result.data };
+
     } catch (error) {
 
       // Update attempt record with error
@@ -267,6 +270,9 @@ const AntiqueListingForm = () => {
       if (isRetry) {
         setRetryCount(prev => prev + 1);
       }
+
+      // Return error result for useFormSubmission hook
+      return { success: false, error: error.message };
     }
   };
 
