@@ -229,16 +229,31 @@ const authSlice = createSlice({
         if (action.payload) {
           state.user = action.payload;
           state.isAuthenticated = true;
+          state.isLoading = false;
           // Update localStorage with fresh user data
           localStorage.setItem('user', JSON.stringify(action.payload));
           console.log('Auth status check successful, user role:', action.payload?.role);
         } else {
           state.user = null;
           state.isAuthenticated = false;
+          state.isLoading = false;
           // Clear localStorage if auth check fails
           localStorage.removeItem('user');
+          localStorage.removeItem('token');
           console.log('Auth status check failed, clearing user data');
         }
+      })
+      .addCase(checkAuthStatus.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(checkAuthStatus.rejected, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
+        state.isLoading = false;
+        // Clear localStorage on auth check failure
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        console.log('Auth status check rejected, clearing user data');
       })
       // Login as seller
       .addCase(loginAsSeller.pending, (state) => {
@@ -284,4 +299,40 @@ const authSlice = createSlice({
 });
 
 export const { clearError, clearMessage, setUser } = authSlice.actions;
+// Helper functions for admin authentication
+export const isAdminUser = (user) => {
+  return user && user.role === 'admin';
+};
+
+export const getRedirectPath = (user, defaultPath = '/dashboard') => {
+  if (isAdminUser(user)) {
+    return '/admin/dashboard';
+  }
+  return defaultPath;
+};
+
+export const shouldRedirectToAdmin = (user, currentPath) => {
+  if (!isAdminUser(user)) return false;
+
+  // List of user dashboard paths that should redirect admins
+  const userDashboardPaths = [
+    '/dashboard',
+    '/product',
+    '/userlist',
+    '/winning-products',
+    '/add-product',
+    '/categories',
+    '/income',
+    '/transportation',
+    '/my-bids',
+    '/sales-history',
+    '/balance',
+    '/profile'
+  ];
+
+  return userDashboardPaths.some(path =>
+    currentPath === path || currentPath.startsWith(path + '/')
+  );
+};
+
 export default authSlice.reducer;

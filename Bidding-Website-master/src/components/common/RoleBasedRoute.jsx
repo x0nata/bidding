@@ -3,12 +3,12 @@ import { useSelector } from 'react-redux';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Title, Body } from './Design';
 
-const RoleBasedRoute = ({ 
-  children, 
-  allowedRoles = [], 
+const RoleBasedRoute = ({
+  children,
+  allowedRoles = [],
   requiredRole = null,
   fallbackPath = "/dashboard",
-  showUnauthorized = true 
+  showUnauthorized = true
 }) => {
   const { isAuthenticated, user, isLoading } = useSelector((state) => state.auth);
   const location = useLocation();
@@ -74,7 +74,10 @@ const RoleBasedRoute = ({
               Go Back
             </button>
             <button
-              onClick={() => window.location.href = fallbackPath}
+              onClick={() => {
+                const redirectPath = userRole === 'admin' ? '/admin/dashboard' : fallbackPath;
+                window.location.href = redirectPath;
+              }}
               className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-colors"
             >
               Go to Dashboard
@@ -83,7 +86,9 @@ const RoleBasedRoute = ({
         </div>
       );
     } else {
-      return <Navigate to={fallbackPath} replace />;
+      // Redirect admin users to admin dashboard, regular users to user dashboard
+      const redirectPath = userRole === 'admin' ? '/admin/dashboard' : fallbackPath;
+      return <Navigate to={redirectPath} replace />;
     }
   }
 

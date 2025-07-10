@@ -54,6 +54,7 @@ import { getAllCategories } from "./redux/slices/categorySlice";
 import OnboardingCheck from "./components/common/OnboardingCheck";
 import NotificationSystem from "./components/common/NotificationSystem";
 import AdminRoute from "./components/common/AdminRoute";
+import AdminRedirectGuard from "./components/common/AdminRedirectGuard";
 import { AdminLogin } from "./screens/admin/AdminLogin";
 import { AdminDashboard } from "./screens/admin/AdminDashboard";
 // import AuthDebug from "./components/debug/AuthDebug";
@@ -86,8 +87,9 @@ function App() {
     <>
       <BrowserRouter>
         <OnboardingCheck>
-          <ScrollToTop />
-          <Routes>
+          <AdminRedirectGuard>
+            <ScrollToTop />
+            <Routes>
           <Route
             path="/"
             element={
@@ -481,7 +483,8 @@ function App() {
               </Layout>
             }
           />
-        </Routes>
+          </Routes>
+          </AdminRedirectGuard>
         </OnboardingCheck>
 
         {/* Toast notifications */}

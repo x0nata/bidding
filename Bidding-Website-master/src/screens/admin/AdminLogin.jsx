@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Caption, Container, PrimaryButton, Title } from "../../router";
 import { commonClassNameOfInput } from "../../components/common/Design";
 import { showSuccess, showError } from "../../redux/slices/notificationSlice";
@@ -18,15 +18,18 @@ export const AdminLogin = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   // Redirect if already authenticated as admin
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
-      navigate("/admin/dashboard");
+      // Redirect to the intended page or admin dashboard
+      const from = location.state?.from?.pathname || "/admin/dashboard";
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user, navigate, location]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -74,7 +77,10 @@ export const AdminLogin = () => {
         });
 
         dispatch(showSuccess("Admin login successful!"));
-        navigate("/admin/dashboard");
+
+        // Redirect to the intended page or admin dashboard
+        const from = location.state?.from?.pathname || "/admin/dashboard";
+        navigate(from, { replace: true });
       } else {
         // Log failed admin access attempt
         auditLogger.logAction('ADMIN_ACCESS_DENIED', {

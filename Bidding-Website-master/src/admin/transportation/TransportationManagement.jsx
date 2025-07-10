@@ -36,9 +36,16 @@ export const TransportationManagement = () => {
   const fetchItems = async () => {
     try {
       setLoading(true);
+      setError(null);
       const token = localStorage.getItem('token');
+
+      // Check if we have a valid token
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
       const queryParams = new URLSearchParams();
-      
+
       Object.entries(filters).forEach(([key, value]) => {
         if (value && value !== 'all') {
           queryParams.append(key, value);
@@ -52,15 +59,24 @@ export const TransportationManagement = () => {
         }
       });
 
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Authentication failed. Please log in again.');
+      }
+
       if (!response.ok) {
-        throw new Error('Failed to fetch transportation items');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to fetch transportation items (${response.status})`);
       }
 
       const data = await response.json();
       setItems(data.data || []);
       setPagination(data.pagination || {});
+      console.log('Transportation items loaded successfully:', data.data?.length || 0, 'items');
     } catch (err) {
+      console.error('Error fetching transportation items:', err);
       setError(err.message);
+      setItems([]);
+      setPagination({});
     } finally {
       setLoading(false);
     }
@@ -70,6 +86,13 @@ export const TransportationManagement = () => {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('token');
+
+      // Check if we have a valid token
+      if (!token) {
+        console.warn('No authentication token found for transportation stats');
+        return;
+      }
+
       const response = await fetch('/api/product/admin/transportation/stats', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -80,9 +103,39 @@ export const TransportationManagement = () => {
       if (response.ok) {
         const data = await response.json();
         setStats(data.data || {});
+        console.log('Transportation stats loaded successfully:', data.data);
+      } else if (response.status === 404) {
+        console.warn('Transportation stats endpoint not found, using default stats');
+        // Set default stats if endpoint doesn't exist
+        setStats({
+          statusBreakdown: {
+            'Ready for Pickup': 0,
+            'In Transit': 0,
+            'Delivered': 0,
+            'Not Required': 0
+          },
+          totalSoldItems: 0,
+          totalRequiringTransportation: 0
+        });
+      } else if (response.status === 401 || response.status === 403) {
+        console.error('Authentication failed for transportation stats');
+        // Don't clear auth state here, just log the error
+      } else {
+        console.error('Failed to fetch transportation stats:', response.status, response.statusText);
       }
     } catch (err) {
       console.error('Failed to fetch stats:', err);
+      // Set default stats on error to prevent UI issues
+      setStats({
+        statusBreakdown: {
+          'Ready for Pickup': 0,
+          'In Transit': 0,
+          'Delivered': 0,
+          'Not Required': 0
+        },
+        totalSoldItems: 0,
+        totalRequiringTransportation: 0
+      });
     }
   };
 
@@ -114,6 +167,12 @@ export const TransportationManagement = () => {
   const handleStatusUpdate = async (itemId, updateData) => {
     try {
       const token = localStorage.getItem('token');
+
+      if (!token) {
+        console.error('No authentication token found for status update');
+        return false;
+      }
+
       const response = await fetch(`/api/product/admin/transportation/${itemId}`, {
         method: 'PUT',
         headers: {
@@ -123,14 +182,22 @@ export const TransportationManagement = () => {
         body: JSON.stringify(updateData)
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update transportation status');
+      if (response.status === 401 || response.status === 403) {
+        console.error('Authentication failed for status update');
+        return false;
       }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to update transportation status (${response.status})`);
+      }
+
+      console.log('Transportation status updated successfully for item:', itemId);
 
       // Refresh the items list
       await fetchItems();
       await fetchStats();
-      
+
       return true;
     } catch (err) {
       console.error('Error updating status:', err);
@@ -167,7 +234,38 @@ export const TransportationManagement = () => {
     return (
       <section className="shadow-s1 p-8 rounded-lg">
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green"></div>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading transportation data...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="shadow-s1 p-8 rounded-lg">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+            <div className="text-red-500 mb-4">
+              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.876c1.38 0 2.5-1.12 2.5-2.5 0-.394-.094-.77-.26-1.106L13.64 6.394a2.5 2.5 0 00-4.28 0L3.86 15.394c-.166.336-.26.712-.26 1.106 0 1.38 1.12 2.5 2.5 2.5z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Transportation Data</h3>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button
+              onClick={() => {
+                setError(null);
+                fetchItems();
+                fetchStats();
+              }}
+              className="bg-green text-white px-4 py-2 rounded-lg hover:bg-primary transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       </section>
     );

@@ -22,12 +22,16 @@ export const PrivateRoute = ({ children, requiredRole = null, allowedRoles = nul
 
   // Check role-based access if required
   if (requiredRole && user?.role !== requiredRole) {
-    return <Navigate to="/dashboard" replace />;
+    // Redirect admin users to admin dashboard, regular users to user dashboard
+    const redirectPath = user?.role === 'admin' ? '/admin/dashboard' : '/dashboard';
+    return <Navigate to={redirectPath} replace />;
   }
 
   // Check if user role is in allowed roles list
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    return <Navigate to="/dashboard" replace />;
+    // Redirect admin users to admin dashboard, regular users to user dashboard
+    const redirectPath = user?.role === 'admin' ? '/admin/dashboard' : '/dashboard';
+    return <Navigate to={redirectPath} replace />;
   }
 
   return <div>{children}</div>;

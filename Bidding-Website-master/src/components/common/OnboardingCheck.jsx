@@ -22,7 +22,8 @@ const OnboardingCheck = ({ children }) => {
     '/about',
     '/contact',
     '/',
-    '/details'
+    '/details',
+    '/admin' // Skip onboarding for all admin routes
   ];
 
   useEffect(() => {
@@ -43,7 +44,8 @@ const OnboardingCheck = ({ children }) => {
     }
 
     // If user is authenticated but hasn't completed onboarding, redirect to onboarding
-    if (isAuthenticated && user && !isLoading && !isOnboardingCompleted) {
+    // Skip onboarding for admin users
+    if (isAuthenticated && user && !isLoading && !isOnboardingCompleted && user.role !== 'admin') {
       navigate('/onboarding', { replace: true });
     }
   }, [isAuthenticated, user, isOnboardingCompleted, isLoading, location.pathname, navigate]);
