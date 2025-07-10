@@ -38,7 +38,8 @@ app.use(
       const allowedOrigins = [
         process.env.FRONTEND_URL,
         'https://bidding-sandy.vercel.app',
-        'https://bidding-9vw1.vercel.app', // 🔧 ADDED: Current frontend URL
+        'https://bidding-9vw1.vercel.app', // ✅ CORRECT: Current frontend URL
+        'https://bidding-9vw1-5kuiwxx8b-x0natas-projects.vercel.app',
         'https://bidding-3yga80dqn-x0natas-projects.vercel.app',
         'http://localhost:3000' // For development
       ].filter(Boolean);
