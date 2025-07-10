@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Title } from "../../router";
 import { TiEyeOutline } from "react-icons/ti";
 import { FaTruck, FaSearch, FaFilter } from "react-icons/fa";
@@ -13,7 +13,8 @@ export const TransportationManagement = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [stats, setStats] = useState({});
-  
+  const [fetchInProgress, setFetchInProgress] = useState(false);
+
   // Filter and search states
   const [filters, setFilters] = useState({
     search: "",
@@ -34,8 +35,15 @@ export const TransportationManagement = () => {
   });
 
   // Fetch transportation items
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
+    // Prevent multiple simultaneous requests
+    if (fetchInProgress) {
+      console.log('🚫 Fetch already in progress, skipping...');
+      return;
+    }
+
     try {
+      setFetchInProgress(true);
       setLoading(true);
       setError(null);
 
@@ -60,11 +68,12 @@ export const TransportationManagement = () => {
       setPagination({});
     } finally {
       setLoading(false);
+      setFetchInProgress(false);
     }
-  };
+  }, [filters.search, filters.status, filters.assignedTo, filters.dateFrom, filters.dateTo, filters.page, filters.limit, fetchInProgress]);
 
   // Fetch transportation statistics
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       console.log('Fetching transportation stats...');
 
@@ -86,12 +95,26 @@ export const TransportationManagement = () => {
         totalRequiringTransportation: 0
       });
     }
-  };
+  }, []);
+
+  // Track if initial load is complete to prevent infinite loops
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   useEffect(() => {
-    fetchItems();
-    fetchStats();
-  }, [filters]);
+    // Only run on mount and when specific filter values change
+    console.log('🔄 Transportation useEffect triggered');
+
+    // Add a small delay to prevent rapid successive calls
+    const timeoutId = setTimeout(() => {
+      if (!fetchInProgress) {
+        fetchItems();
+        fetchStats();
+        setInitialLoadComplete(true);
+      }
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [fetchItems, fetchStats, fetchInProgress]);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({
