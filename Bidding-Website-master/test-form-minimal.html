@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Submission Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .error { color: red; margin-top: 10px; }
+        .success { color: green; margin-top: 10px; }
+        .loading { color: orange; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Minimal Form Submission Test</h1>
+    <p>This test will help identify if the issue is with the React form or the API endpoint.</p>
+    
+    <form id="testForm">
+        <div class="form-group">
+            <label for="title">Title *</label>
+            <input type="text" id="title" name="title" required value="Test Antique Vase">
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Description *</label>
+            <textarea id="description" name="description" required>A beautiful test antique vase from the 1920s</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="startingBid">Starting Bid *</label>
+            <input type="number" id="startingBid" name="startingBid" required value="100">
+        </div>
+        
+        <div class="form-group">
+            <label for="category">Category *</label>
+            <select id="category" name="category" required>
+                <option value="">Select Category</option>
+                <option value="Ceramics">Ceramics</option>
+                <option value="Furniture">Furniture</option>
+                <option value="Art">Art</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="auctionType">Auction Type</label>
+            <select id="auctionType" name="auctionType">
+                <option value="Timed">Timed</option>
+                <option value="Live">Live</option>
+                <option value="Buy Now">Buy Now</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="pickupAddress">Pickup Address</label>
+            <input type="text" id="pickupAddress" name="pickupAddress" value="123 Test Street, Addis Ababa">
+        </div>
+        
+        <button type="submit">Submit Test Form</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <script>
+        const form = document.getElementById('testForm');
+        const result = document.getElementById('result');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            result.innerHTML = '<div class="loading">Submitting form...</div>';
+            
+            try {
+                // Create FormData
+                const formData = new FormData();
+                
+                // Add form fields
+                formData.append('title', document.getElementById('title').value);
+                formData.append('description', document.getElementById('description').value);
+                formData.append('startingBid', document.getElementById('startingBid').value);
+                formData.append('category', document.getElementById('category').value);
+                formData.append('auctionType', document.getElementById('auctionType').value);
+                formData.append('pickupAddress', document.getElementById('pickupAddress').value);
+                
+                console.log('Submitting to: https://bidding-sandy.vercel.app/api/product');
+                
+                // Make API request
+                const response = await fetch('https://bidding-sandy.vercel.app/api/product', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    console.error('Error response:', errorData);
+                    throw new Error(`HTTP ${response.status}: ${errorData}`);
+                }
+                
+                const responseData = await response.json();
+                console.log('Success response:', responseData);
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h3>Form submitted successfully!</h3>
+                        <p>Product ID: ${responseData._id || responseData.data?._id || 'Unknown'}</p>
+                        <pre>${JSON.stringify(responseData, null, 2)}</pre>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Form submission error:', error);
+                result.innerHTML = `
+                    <div class="error">
+                        <h3>Form submission failed</h3>
+                        <p>Error: ${error.message}</p>
+                        <p>Check the browser console for more details.</p>
+                    </div>
+                `;
+            }
+        });
+        
+        // Test backend connectivity
+        async function testBackend() {
+            try {
+                console.log('Testing backend connectivity...');
+                const response = await fetch('https://bidding-sandy.vercel.app/api/category');
+                console.log('Backend test response:', response.status);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Categories loaded:', data);
+                }
+            } catch (error) {
+                console.error('Backend connectivity test failed:', error);
+            }
+        }
+        
+        // Run backend test on page load
+        testBackend();
+    </script>
+</body>
+</html>

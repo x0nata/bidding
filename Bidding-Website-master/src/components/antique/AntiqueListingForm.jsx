@@ -1,95 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
-import { validateAuctionForm } from '../../utils/validation';
-import { useFormState, useFormSubmission } from '../../utils/formHelpers';
-import { fetchCategories, submitProductListing, verifyProductExists } from '../../utils/dataFetching';
 
-import { logListingError } from '../../utils/errorMonitoring';
 
-// Enhanced error display component
-const ErrorDisplay = ({ error, onRetry, onDismiss }) => {
-  if (!error) return null;
-
-  return (
-    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-      <div className="flex items-start">
-        <div className="flex-shrink-0">
-          <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-          </svg>
-        </div>
-        <div className="ml-3 flex-1">
-          <h3 className="text-sm font-medium text-red-800">
-            {error.stage ? `${error.stage.charAt(0).toUpperCase() + error.stage.slice(1)} Error` : 'Error'}
-          </h3>
-          <div className="mt-2 text-sm text-red-700">
-            <p>{error.message}</p>
-
-            {error.troubleshooting && error.troubleshooting.length > 0 && (
-              <div className="mt-3">
-                <p className="font-medium">Troubleshooting steps:</p>
-                <ul className="mt-1 list-disc list-inside space-y-1">
-                  {error.troubleshooting.map((step, index) => (
-                    <li key={index}>{step}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {error.details && Object.keys(error.details).length > 0 && (
-              <details className="mt-3">
-                <summary className="cursor-pointer font-medium">Technical Details</summary>
-                <pre className="mt-2 text-xs bg-red-100 p-2 rounded overflow-auto">
-                  {JSON.stringify(error.details, null, 2)}
-                </pre>
-              </details>
-            )}
-          </div>
-
-          <div className="mt-4 flex space-x-3">
-            {error.isRetryable && onRetry && (
-              <button
-                type="button"
-                onClick={onRetry}
-                className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-              >
-                Try Again
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={onDismiss}
-              className="bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
-            >
-              Dismiss
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const AntiqueListingForm = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const [categories, setCategories] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState(null);
-  const [retryCount, setRetryCount] = useState(0);
-  const [showDebugPanel, setShowDebugPanel] = useState(false);
 
-  // Use the common form state manager
-  const {
-    formData,
-    isSubmitting,
-    handleInputChange,
-    handleArrayInput,
-    handleFileUpload,
-    resetForm,
-    setIsSubmitting
-  } = useFormState({
+  // Simple form state without complex hooks
+  const [formData, setFormData] = useState({
     // Basic product info
     title: '',
     description: '',
@@ -103,14 +25,12 @@ const AntiqueListingForm = () => {
     provenance: '',
     condition: 'Good',
     conditionDetails: '',
-    materials: [],
-    techniques: [],
+    materials: '',
+    techniques: '',
     historicalSignificance: '',
-    maker: {
-      name: '',
-      nationality: '',
-      lifespan: ''
-    },
+    makerName: '',
+    makerNationality: '',
+    makerLifespan: '',
     style: '',
     rarity: 'Common',
 
@@ -126,6 +46,12 @@ const AntiqueListingForm = () => {
     lengthpic: '',
     weigth: '',
     mediumused: '',
+
+    // Pickup address for logistics
+    pickupAddress: '',
+    pickupCity: '',
+    pickupPhone: '',
+    pickupInstructions: '',
 
     // Images
     images: []
@@ -157,205 +83,187 @@ const AntiqueListingForm = () => {
 
   const loadCategories = async () => {
     try {
-      const data = await fetchCategories();
-      setCategories(data);
+      console.log('Loading categories...');
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/category`);
+      if (response.ok) {
+        const categoriesData = await response.json();
+        setCategories(categoriesData || []);
+        console.log('Categories loaded:', categoriesData);
+      } else {
+        console.error('Failed to load categories:', response.status);
+        toast.error('Failed to load categories');
+      }
     } catch (error) {
+      console.error('Failed to load categories:', error);
+      toast.error('Failed to load categories');
     }
   };
 
-  // Form handling functions are now provided by useFormState hook
+  // Simple input change handler
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    console.log(`Input changed: ${name} = ${value}`);
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Simple image upload handler
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    handleFileUpload('images', files);
+    console.log('Images selected:', files.length);
+    setFormData(prev => ({
+      ...prev,
+      images: files
+    }));
   };
 
+  // Simple form validation
   const validateForm = () => {
-    const validationError = validateAuctionForm(formData);
-    if (validationError) {
-      toast.error(validationError);
-      return false;
+    console.log('Validating form...');
+    const required = ['title', 'description', 'startingBid', 'category'];
+
+    for (const field of required) {
+      if (!formData[field] || formData[field].toString().trim() === '') {
+        toast.error(`${field.charAt(0).toUpperCase() + field.slice(1)} is required`);
+        return false;
+      }
     }
+
+    console.log('Form validation passed');
     return true;
   };
 
-  // Enhanced form submission with comprehensive error handling and debugging
-  const performSubmission = async (data, isRetry = false) => {
-    let attemptRecord = null;
+  // Simple, clean form submission
+  const submitForm = async () => {
+    console.log('Starting form submission...');
 
     try {
       setSubmissionError(null);
 
-      if (isRetry) {
-      } else {
-        setRetryCount(0);
-      }
-
-      // Record the attempt for debugging
-
+      // Create FormData for submission
       const submitData = new FormData();
 
-      // Add all form fields (only non-empty values)
-      Object.keys(data).forEach(key => {
-        const value = data[key];
+      // Add basic fields
+      submitData.append('title', formData.title);
+      submitData.append('description', formData.description);
+      submitData.append('startingBid', formData.startingBid);
+      submitData.append('category', formData.category);
+      submitData.append('auctionType', formData.auctionType);
 
-        if (key === 'images' && Array.isArray(value) && value.length > 0) {
-          value.forEach(image => {
-            submitData.append('images', image);
-          });
-        } else if (key === 'materials' || key === 'techniques') {
-          if (Array.isArray(value) && value.length > 0) {
-            submitData.append(key, JSON.stringify(value));
-          }
-        } else if (key === 'maker') {
-          if (value && typeof value === 'object' && (value.name || value.nationality || value.lifespan)) {
-            submitData.append(key, JSON.stringify(value));
-          }
-        } else if (value !== null && value !== undefined && value !== '') {
-          // Only append non-empty values
-          submitData.append(key, value);
+      // Add optional fields only if they have values
+      if (formData.reservePrice) submitData.append('reservePrice', formData.reservePrice);
+      if (formData.era) submitData.append('era', formData.era);
+      if (formData.period) submitData.append('period', formData.period);
+      if (formData.provenance) submitData.append('provenance', formData.provenance);
+      if (formData.condition) submitData.append('condition', formData.condition);
+      if (formData.conditionDetails) submitData.append('conditionDetails', formData.conditionDetails);
+      if (formData.historicalSignificance) submitData.append('historicalSignificance', formData.historicalSignificance);
+      if (formData.style) submitData.append('style', formData.style);
+      if (formData.rarity) submitData.append('rarity', formData.rarity);
+      if (formData.bidIncrement) submitData.append('bidIncrement', formData.bidIncrement);
+
+      // Add physical attributes
+      if (formData.height) submitData.append('height', formData.height);
+      if (formData.width) submitData.append('width', formData.width);
+      if (formData.lengthpic) submitData.append('lengthpic', formData.lengthpic);
+      if (formData.weigth) submitData.append('weigth', formData.weigth);
+      if (formData.mediumused) submitData.append('mediumused', formData.mediumused);
+
+      // Add pickup address fields
+      if (formData.pickupAddress) submitData.append('pickupAddress', formData.pickupAddress);
+      if (formData.pickupCity) submitData.append('pickupCity', formData.pickupCity);
+      if (formData.pickupPhone) submitData.append('pickupPhone', formData.pickupPhone);
+      if (formData.pickupInstructions) submitData.append('pickupInstructions', formData.pickupInstructions);
+
+      // Add maker information as JSON if any field is filled
+      if (formData.makerName || formData.makerNationality || formData.makerLifespan) {
+        const maker = {
+          name: formData.makerName || '',
+          nationality: formData.makerNationality || '',
+          lifespan: formData.makerLifespan || ''
+        };
+        submitData.append('maker', JSON.stringify(maker));
+      }
+
+      // Add materials and techniques as JSON arrays
+      if (formData.materials) {
+        const materialsArray = formData.materials.split(',').map(item => item.trim()).filter(item => item);
+        if (materialsArray.length > 0) {
+          submitData.append('materials', JSON.stringify(materialsArray));
         }
+      }
+
+      if (formData.techniques) {
+        const techniquesArray = formData.techniques.split(',').map(item => item.trim()).filter(item => item);
+        if (techniquesArray.length > 0) {
+          submitData.append('techniques', JSON.stringify(techniquesArray));
+        }
+      }
+
+      // Add auction dates if provided
+      if (formData.auctionStartDate) submitData.append('auctionStartDate', formData.auctionStartDate);
+      if (formData.auctionEndDate) submitData.append('auctionEndDate', formData.auctionEndDate);
+
+      // Add images
+      if (formData.images && formData.images.length > 0) {
+        formData.images.forEach(image => {
+          submitData.append('images', image);
+        });
+      }
+
+      console.log('FormData prepared, making API request...');
+
+      // Make API request
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/product`, {
+        method: 'POST',
+        body: submitData,
+        credentials: 'include'
       });
 
-      const result = await submitProductListing(submitData);
+      console.log('API response status:', response.status);
 
-      // Update attempt record with result
-      if (attemptRecord) {
-        attemptRecord.result = result;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
       }
 
-      if (!result.success) {
-        const error = new Error(result.error?.message || 'Submission failed');
-        error.stage = result.error?.stage;
-        error.type = result.error?.type;
-        error.code = result.error?.code;
-        error.details = result.error?.details;
-        error.isRetryable = result.error?.isRetryable;
-        error.troubleshooting = result.error?.troubleshooting;
-        throw error;
-      }
+      const result = await response.json();
+      console.log('Product creation successful:', result);
 
-      // Handle successful submission
-      await handleSuccessfulSubmission(result.data, result.metadata);
-
-      // Return success result for useFormSubmission hook
-      return { success: true, data: result.data };
-
-    } catch (error) {
-
-      // Update attempt record with error
-      if (attemptRecord) {
-        attemptRecord.error = error;
-      }
-
-      // Log error for monitoring
-      logListingError(error.stage || 'submission', error, {
-        formData: data,
-        isRetry,
-        retryCount,
-        timestamp: new Date().toISOString(),
-        attemptId: attemptRecord?.timestamp
-      });
-
-      // Set the error for display
-      setSubmissionError({
-        message: error.message,
-        stage: error.stage || 'unknown',
-        type: error.type || 'UnknownError',
-        code: error.code || 'GENERAL_ERROR',
-        details: error.details || {},
-        isRetryable: error.isRetryable !== false, // Default to retryable
-        troubleshooting: error.troubleshooting || ['Please try again or contact support.']
-      });
-
-      if (isRetry) {
-        setRetryCount(prev => prev + 1);
-      }
-
-      // Return error result for useFormSubmission hook
-      return { success: false, error: error.message };
-    }
-  };
-
-  const handleSuccessfulSubmission = async (productData, metadata) => {
-    try {
-      // Verify the product was created successfully
-      if (!productData || !productData._id) {
-        throw new Error('Product creation failed - no product ID returned');
-      }
-
-
-      if (metadata?.requestId) {
-      }
-
-      // Verify the product exists in the database
-      const exists = await verifyProductExists(productData._id);
-
-      if (!exists) {
-        throw new Error('Product creation failed - item not found in database');
-      }
-
-
-      // Clear any previous errors
-      setSubmissionError(null);
-      setRetryCount(0);
-
-      // Show success message only after verification
+      // Show success message
       toast.success('Antique listing created successfully!');
 
-      // Note: User listings refresh removed as My Listings feature was removed
-
       // Navigate to the product page
-      navigate(`/product/${productData._id}`);
+      if (result._id) {
+        navigate(`/product/${result._id}`);
+      } else if (result.data && result.data._id) {
+        navigate(`/product/${result.data._id}`);
+      } else {
+        navigate('/dashboard');
+      }
 
-    } catch (verificationError) {
-      setSubmissionError({
-        message: verificationError.message,
-        stage: 'verification',
-        type: 'VerificationError',
-        code: 'VERIFICATION_ERROR',
-        details: { productId: productData?._id },
-        isRetryable: true,
-        troubleshooting: [
-          'The listing may have been created but verification failed',
-          'Try refreshing the page to see if your listing appears',
-          'Contact support if the listing is missing'
-        ]
-      });
+    } catch (error) {
+      console.error('Form submission error:', error);
+      setSubmissionError(error.message);
+      toast.error(error.message || 'Failed to create listing');
     }
   };
 
-  // Use the common form submission handler
-  const { handleSubmit: submitForm } = useFormSubmission(
-    async (data) => {
-      await performSubmission(data, false);
-    },
-    {
-      onSuccess: () => {
-        // Success is handled in performSubmission
-      },
-      resetOnSuccess: false
-    }
-  );
-
+  // Simple form submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Form submitted');
 
-    if (!validateForm()) return;
-
-    setIsSubmitting(true);
-    try {
-      await submitForm(formData, resetForm);
-    } finally {
-      setIsSubmitting(false);
+    if (!validateForm()) {
+      console.log('Form validation failed');
+      return;
     }
-  };
-
-  const handleRetry = async () => {
-    if (!validateForm()) return;
 
     setIsSubmitting(true);
     try {
-      await performSubmission(formData, true);
+      await submitForm();
     } finally {
       setIsSubmitting(false);
     }
@@ -369,12 +277,20 @@ const AntiqueListingForm = () => {
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
       <h2 className="text-3xl font-bold text-gray-800 mb-8">List Your Antique</h2>
 
-      {/* Enhanced Error Display */}
-      <ErrorDisplay
-        error={submissionError}
-        onRetry={handleRetry}
-        onDismiss={handleErrorDismiss}
-      />
+      {/* Simple Error Display */}
+      {submissionError && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex justify-between items-start">
+            <p className="text-red-700">{submissionError}</p>
+            <button
+              onClick={handleErrorDismiss}
+              className="text-red-500 hover:text-red-700"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Basic Information */}
@@ -634,6 +550,72 @@ const AntiqueListingForm = () => {
           )}
         </div>
 
+        {/* Pickup Address for Logistics */}
+        <div className="bg-gray-50 p-6 rounded-lg">
+          <h3 className="text-xl font-semibold mb-4">Pickup Address</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Provide the address where our team can collect the item after the auction ends.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Street Address
+              </label>
+              <input
+                type="text"
+                name="pickupAddress"
+                value={formData.pickupAddress}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 123 Main Street, Apartment 4B"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                City
+              </label>
+              <input
+                type="text"
+                name="pickupCity"
+                value={formData.pickupCity}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., Addis Ababa"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Contact Phone
+              </label>
+              <input
+                type="tel"
+                name="pickupPhone"
+                value={formData.pickupPhone}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., +251 911 123456"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Special Instructions
+              </label>
+              <textarea
+                name="pickupInstructions"
+                value={formData.pickupInstructions}
+                onChange={handleInputChange}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., Ring doorbell twice, item is in the basement, available weekdays 9-5"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Images */}
         <div className="bg-gray-50 p-6 rounded-lg">
           <h3 className="text-xl font-semibold mb-4">Images</h3>
@@ -670,72 +652,23 @@ const AntiqueListingForm = () => {
           </div>
         </div>
 
-        <div className="flex justify-between items-center">
-          {/* Debug Controls (Development Only) */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="flex space-x-2">
-              <button
-                type="button"
-                onClick={() => setShowDebugPanel(true)}
-                className="px-3 py-1 text-xs bg-gray-200 text-gray-600 rounded hover:bg-gray-300"
-                title="Open Debug Panel"
-              >
-                🐛 Debug Panel
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  alert('Diagnostic complete! Check browser console for detailed results.');
-                }}
-                className="px-3 py-1 text-xs bg-blue-200 text-blue-600 rounded hover:bg-blue-300"
-                title="Run Full System Diagnostic"
-              >
-                🔍 Diagnose
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const blob = new Blob([report], { type: 'application/json' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `listing-debug-report-${Date.now()}.json`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                }}
-                className="px-3 py-1 text-xs bg-green-200 text-green-600 rounded hover:bg-green-300"
-                title="Download Debug Report"
-              >
-                📥 Export
-              </button>
-            </div>
-          )}
-
-          <div className="flex space-x-4 ml-auto">
-            <button
-              type="button"
-              onClick={() => navigate('/dashboard')}
-              className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isSubmitting ? 'Creating...' : 'Create Listing'}
-            </button>
-          </div>
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard')}
+            className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          >
+            {isSubmitting ? 'Creating...' : 'Create Listing'}
+          </button>
         </div>
       </form>
-
-      {/* Debug Panel */}
-        isVisible={showDebugPanel}
-        onClose={() => setShowDebugPanel(false)}
-      />
     </div>
   );
 };
