@@ -133,12 +133,39 @@ export const createProduct = createAsyncThunk(
         }
       });
 
+      console.log('Product creation response:', response.status, response.data);
+
       // Check if response indicates success
       if (response.status >= 400) {
-        throw new Error(response.data?.message || `HTTP ${response.status}: ${response.statusText}`);
+        const errorMessage = response.data?.message || response.data?.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+        console.error('Product creation failed:', errorMessage, response.data);
+        throw new Error(errorMessage);
       }
 
-      return response.data;
+      // Validate response structure
+      const responseData = response.data;
+      if (!responseData) {
+        throw new Error('Empty response from server');
+      }
+
+      // Handle different response formats
+      let productData = null;
+      if (responseData.success && responseData.data && responseData.data._id) {
+        // New enhanced backend response format
+        productData = responseData.data;
+      } else if (responseData.data && responseData.data._id) {
+        // Legacy format with data wrapper
+        productData = responseData.data;
+      } else if (responseData._id) {
+        // Direct product object response
+        productData = responseData;
+      } else {
+        console.error('Unexpected response structure:', responseData);
+        throw new Error('Invalid response structure - no product ID found');
+      }
+
+      console.log('Product created successfully:', productData._id);
+      return responseData;
     } catch (error) {
 
       // Handle different types of errors

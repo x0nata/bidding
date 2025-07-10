@@ -17,16 +17,40 @@ export const fetchWithErrorHandling = async (url, options = {}) => {
   };
 
   try {
+    console.log(`Making request to: ${url}`);
     const response = await fetch(url, defaultOptions);
-    
+
+    console.log(`Response status: ${response.status} ${response.statusText}`);
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      let errorData = {};
+      try {
+        errorData = await response.json();
+      } catch (parseError) {
+        console.error('Failed to parse error response as JSON:', parseError);
+        errorData = { message: `HTTP ${response.status}: ${response.statusText}` };
+      }
+
+      const errorMessage = errorData.message || errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+      console.error('API Error:', errorMessage, errorData);
+      throw new Error(errorMessage);
     }
-    
-    return await response.json();
+
+    const responseData = await response.json();
+    console.log('Response data:', responseData);
+    return responseData;
   } catch (error) {
-    throw error;
+    // Handle network errors
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      console.error('Network error:', error);
+      throw new Error('Network error - please check your internet connection');
+    } else if (error.name === 'AbortError') {
+      console.error('Request aborted:', error);
+      throw new Error('Request was cancelled');
+    } else {
+      console.error('Fetch error:', error);
+      throw error;
+    }
   }
 };
 
@@ -61,7 +85,7 @@ export const fetchProducts = async (params = {}) => {
 
 export const fetchProductById = async (id) => {
   try {
-    return await fetchWithErrorHandling(`${API_BASE_URL}/product/${id}`);
+    return await fetchWithErrorHandling(`${API_BASE_URL}/api/product/${id}`);
   } catch (error) {
     toast.error('Failed to load product details');
     throw error;
@@ -71,9 +95,13 @@ export const fetchProductById = async (id) => {
 // Verify product exists in database (without showing error toast)
 export const verifyProductExists = async (id) => {
   try {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/product/${id}`);
-    return response && response._id === id;
+    console.log(`Verifying product exists: ${id}`);
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/product/${id}`);
+    const exists = response && (response._id === id || response.data?._id === id);
+    console.log(`Product ${id} exists:`, exists);
+    return exists;
   } catch (error) {
+    console.log(`Product ${id} verification failed:`, error.message);
     return false;
   }
 };
@@ -184,15 +212,39 @@ export const submitProductListing = async (formData) => {
       headers: formData instanceof FormData ? {} : { 'Content-Type': 'application/json' }
     });
 
-    // Verify the response contains the expected data structure
-    if (!response.success || !response.data || !response.data._id) {
-      throw new Error('Invalid response from server - product may not have been saved');
+    console.log('Product creation response:', response);
+
+    // Handle different response formats from backend
+    let productData = null;
+    let success = false;
+
+    if (response.success && response.data && response.data._id) {
+      // New enhanced backend response format
+      success = true;
+      productData = response.data;
+    } else if (response.data && response.data._id) {
+      // Legacy format with data wrapper
+      success = true;
+      productData = response.data;
+    } else if (response._id) {
+      // Direct product object response
+      success = true;
+      productData = response;
+    } else {
+      // Log the actual response structure for debugging
+      console.error('Unexpected response structure:', response);
+      throw new Error('Invalid response from server - product may not have been saved. Check console for response details.');
+    }
+
+    if (!success || !productData || !productData._id) {
+      throw new Error('Product creation failed - no valid product data returned');
     }
 
     // Don't show success message here - let the calling component handle it
     // after proper verification
-    return { success: true, data: response.data };
+    return { success: true, data: productData, metadata: response.metadata };
   } catch (error) {
+    console.error('Product listing submission error:', error);
     toast.error(error.message || 'Failed to create listing');
     return { success: false, error: error.message };
   }
