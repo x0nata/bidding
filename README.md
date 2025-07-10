@@ -1,4 +1,4 @@
-#  Horn of Antiques - Ethiopian Antique Auction Platform
+# 🏺 Horn of Antiques - Ethiopian Antique Auction Platform
 
 <div align="center">
 
@@ -21,7 +21,7 @@
 [![JWT](https://img.shields.io/badge/JWT-9.0.2-000000?style=flat-square&logo=json-web-tokens)](https://jwt.io/)
 [![Cloudinary](https://img.shields.io/badge/Cloudinary-Media_Storage-3448C5?style=flat-square&logo=cloudinary)](https://cloudinary.com/)
 
-###live Demo
+### live Demo
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Frontend-blue?style=for-the-badge)](https://bidding-9vw1.vercel.app/)
 [![API Status](https://img.shields.io/badge/🚀_API-Backend-green?style=for-the-badge)](https://bidding-sandy.vercel.app/)
 
