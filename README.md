@@ -8,9 +8,7 @@
 
 <div align="center">
 
-![Horn of Antiques](https://img.shields.io/badge/Horn%20of%20Antiques-Antique%20Auction%20Platform-gold?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjRkZENzAwIi8+Cjwvc3ZnPgo=)
-
-# 🛠️ Tech Stack
+## 🛠️ Tech Stack
 ### Frontend
 [![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
 [![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.2.3-764ABC?style=flat-square&logo=redux)](https://redux-toolkit.js.org/)
