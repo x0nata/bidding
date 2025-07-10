@@ -1,4 +1,11 @@
-import io from 'socket.io-client';
+// Safe import with error handling
+let io = null;
+try {
+  io = require('socket.io-client');
+} catch (error) {
+  console.warn('socket.io-client not available, WebSocket features disabled');
+}
+
 import { store } from '../redux/store';
 import { addBid, updateCurrentBid } from '../redux/slices/biddingSlice';
 import { updateAuctionStatus } from '../redux/slices/auctionSlice';
@@ -13,9 +20,16 @@ class WebSocketService {
   constructor() {
     this.socket = null;
     this.isConnected = false;
+    this.isAvailable = !!io;
   }
 
   connect() {
+    // Early return if socket.io is not available
+    if (!this.isAvailable) {
+      console.log('🔄 WebSocket not available - using polling mode');
+      return;
+    }
+
     if (this.socket && this.isConnected) {
       return;
     }
@@ -189,8 +203,16 @@ class WebSocketService {
   }
 
   disconnect() {
+    if (!this.isAvailable) {
+      return; // No-op if socket.io not available
+    }
+
     if (this.socket) {
-      this.socket.disconnect();
+      try {
+        this.socket.disconnect();
+      } catch (error) {
+        console.warn('Error disconnecting socket:', error);
+      }
       this.socket = null;
       this.isConnected = false;
     }
