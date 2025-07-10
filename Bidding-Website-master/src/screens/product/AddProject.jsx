@@ -789,7 +789,7 @@ export const AddProduct = () => {
                   type="text"
                   name="pickupAddress"
                   value={formData.pickupAddress}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   className={commonClassNameOfInput}
                   placeholder="e.g., 123 Main Street, Apartment 4B"
                   disabled={isLoading}
@@ -802,7 +802,7 @@ export const AddProduct = () => {
                   type="text"
                   name="pickupCity"
                   value={formData.pickupCity}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   className={commonClassNameOfInput}
                   placeholder="e.g., Addis Ababa"
                   disabled={isLoading}
@@ -815,7 +815,7 @@ export const AddProduct = () => {
                   type="tel"
                   name="pickupPhone"
                   value={formData.pickupPhone}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   className={commonClassNameOfInput}
                   placeholder="e.g., +251 911 123456"
                   disabled={isLoading}
@@ -827,7 +827,7 @@ export const AddProduct = () => {
                 <textarea
                   name="pickupInstructions"
                   value={formData.pickupInstructions}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   rows={3}
                   className={commonClassNameOfInput}
                   placeholder="e.g., Ring doorbell twice, item is in the basement, available weekdays 9-5"
