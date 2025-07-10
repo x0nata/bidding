@@ -39,7 +39,7 @@ class ServerlessSocketService {
 
       return {
         auctionId,
-        currentBid: highestBid ? {
+        currentBid: (highestBid && highestBid.user) ? {
           amount: highestBid.bidAmount,
           bidder: highestBid.user.name,
           timestamp: highestBid.createdAt

@@ -34,6 +34,7 @@ export { Dashboard } from "../screens/dashboard/Dashboard";
 export { AdminProductList } from "../admin/product/AdminProductList";
 export { UpdateProductByAdmin } from "../admin/product/UpdateProductByAdmin";
 export { Income } from "../admin/Income";
+export { TransportationManagement } from "../admin/transportation/TransportationManagement";
 
 //Category  Routes
 export { CreateCategory } from "../admin/category/CreateCategory";

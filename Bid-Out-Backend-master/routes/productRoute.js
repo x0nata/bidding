@@ -20,6 +20,10 @@ const {
   endAuctionEarly,
   changeAuctionStatus,
   getAuctionBidHistory,
+  // Transportation management functions
+  getItemsForTransportation,
+  updateTransportationStatus,
+  getTransportationStats,
 } = require("../controllers/productCtr");
 const { upload } = require("../utils/fileUpload");
 const { protect, isUser, isAdmin } = require("../middleWare/authMiddleWare");
@@ -53,5 +57,10 @@ router.put("/admin/auctions/:id", protect, isAdmin, updateAuctionByAdmin);
 router.post("/admin/auctions/:id/end", protect, isAdmin, endAuctionEarly);
 router.patch("/admin/auctions/:id/status", protect, isAdmin, changeAuctionStatus);
 router.get("/admin/auctions/:id/bids", protect, isAdmin, getAuctionBidHistory);
+
+// Transportation management routes (admin only)
+router.get("/admin/transportation", protect, isAdmin, getItemsForTransportation);
+router.put("/admin/transportation/:id", protect, isAdmin, updateTransportationStatus);
+router.get("/admin/transportation/stats", protect, isAdmin, getTransportationStats);
 
 module.exports = router;

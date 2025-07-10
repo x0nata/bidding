@@ -8,7 +8,7 @@ import { User1 } from "../../utils/userAvatars";
 import { CgProductHunt } from "react-icons/cg";
 import { TbCurrencyDollar } from "react-icons/tb";
 import { FiUser, FiClock, FiShoppingBag } from "react-icons/fi";
-import { FaPlusCircle, FaGavel, FaTrophy } from "react-icons/fa";
+import { FaPlusCircle, FaGavel, FaTrophy, FaTruck } from "react-icons/fa";
 import { GiMagnifyingGlass, GiDiploma } from "react-icons/gi";
 import { HiOutlineAcademicCap, HiOutlineChartBar } from "react-icons/hi";
 import { BsGraphUp, BsHeart } from "react-icons/bs";
@@ -288,6 +288,17 @@ export const Sidebar = ({ role: propRole }) => {
                   <TbCurrencyDollar size={20} />
                 </span>
                 <span className="font-medium">Revenue</span>
+              </CustomNavLink>
+
+              <CustomNavLink
+                href="/admin/transportation"
+                isActive={location.pathname === "/admin/transportation"}
+                className={getNavItemClass(location.pathname === "/admin/transportation")}
+              >
+                <span className="flex-shrink-0">
+                  <FaTruck size={18} />
+                </span>
+                <span className="font-medium">Transportation</span>
               </CustomNavLink>
             </>
           )}

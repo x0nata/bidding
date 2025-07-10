@@ -332,7 +332,7 @@ class SocketService {
         currentBid,
         totalBids,
         timeRemaining,
-        highestBidder: highestBid ? highestBid.user.name : null,
+        highestBidder: (highestBid && highestBid.user) ? highestBid.user.name : null,
         reserveMet: auction.reservePrice ? currentBid >= auction.reservePrice : true,
         viewerCount: this.auctionRooms.get(auctionId)?.size || 0
       };

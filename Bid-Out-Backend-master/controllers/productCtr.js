@@ -948,7 +948,7 @@ const getAllAuctionsForAdmin = asyncHandler(async (req, res) => {
 
         const highestBid = bids[0];
         const bidCount = bids.length;
-        const uniqueBidders = [...new Set(bids.map(bid => bid.user._id.toString()))].length;
+        const uniqueBidders = [...new Set(bids.filter(bid => bid.user && bid.user._id).map(bid => bid.user._id.toString()))].length;
 
         // Determine auction status
         let auctionStatus = 'pending';
@@ -971,11 +971,11 @@ const getAllAuctionsForAdmin = asyncHandler(async (req, res) => {
           title: auction.title,
           description: auction.description,
           category: auction.category,
-          seller: {
+          seller: auction.user ? {
             _id: auction.user._id,
             name: auction.user.name,
             email: auction.user.email
-          },
+          } : null,
           auctionType: auction.auctionType,
           startingBid: auction.startingBid,
           reservePrice: auction.reservePrice,
@@ -989,7 +989,7 @@ const getAllAuctionsForAdmin = asyncHandler(async (req, res) => {
           isSoldOut: auction.isSoldout,
           bidCount,
           uniqueBidders,
-          highestBidder: highestBid ? {
+          highestBidder: (highestBid && highestBid.user) ? {
             _id: highestBid.user._id,
             name: highestBid.user.name,
             email: highestBid.user.email
@@ -1417,6 +1417,247 @@ const getAuctionBidHistory = asyncHandler(async (req, res) => {
   }
 });
 
+// Transportation Management Functions
+
+// Get all items ready for transportation (admin only)
+const getItemsForTransportation = asyncHandler(async (req, res) => {
+  const {
+    search,
+    status,
+    assignedTo,
+    dateFrom,
+    dateTo,
+    page = 1,
+    limit = 20
+  } = req.query;
+
+  // Build filter for sold items
+  let filter = {
+    isSoldout: true,
+    soldTo: { $exists: true, $ne: null }
+  };
+
+  // Filter by transportation status
+  if (status && status !== 'all') {
+    filter.transportationStatus = status;
+  }
+
+  // Filter by assigned personnel
+  if (assignedTo) {
+    filter.transportationAssignedTo = { $regex: assignedTo, $options: 'i' };
+  }
+
+  // Date range filter (settlement date)
+  if (dateFrom || dateTo) {
+    filter.settlementDate = {};
+    if (dateFrom) filter.settlementDate.$gte = new Date(dateFrom);
+    if (dateTo) filter.settlementDate.$lte = new Date(dateTo);
+  }
+
+  // Search filter
+  if (search) {
+    filter.$or = [
+      { title: { $regex: search, $options: 'i' } },
+      { description: { $regex: search, $options: 'i' } }
+    ];
+  }
+
+  // Pagination
+  const skip = (page - 1) * limit;
+
+  try {
+    const items = await Product.find(filter)
+      .populate('user', 'name email phone address') // Seller info
+      .populate('soldTo', 'name email phone address') // Buyer info
+      .sort('-settlementDate')
+      .skip(skip)
+      .limit(Number(limit));
+
+    const totalItems = await Product.countDocuments(filter);
+
+    const itemsWithDetails = items.map(item => ({
+      _id: item._id,
+      title: item.title,
+      description: item.description,
+      image: item.image,
+      finalPrice: item.finalPrice,
+      settlementDate: item.settlementDate,
+      transportationStatus: item.transportationStatus || 'Ready for Pickup',
+      transportationNotes: item.transportationNotes,
+      transportationAssignedTo: item.transportationAssignedTo,
+      transportationStatusHistory: item.transportationStatusHistory || [],
+      pickupAddress: item.pickupAddress || item.user?.address,
+      deliveryAddress: item.deliveryAddress || item.soldTo?.address,
+      transportationStartDate: item.transportationStartDate,
+      transportationCompletedDate: item.transportationCompletedDate,
+      seller: {
+        _id: item.user._id,
+        name: item.user.name,
+        email: item.user.email,
+        phone: item.user.phone,
+        address: item.user.address
+      },
+      buyer: {
+        _id: item.soldTo._id,
+        name: item.soldTo.name,
+        email: item.soldTo.email,
+        phone: item.soldTo.phone,
+        address: item.soldTo.address
+      }
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: itemsWithDetails,
+      pagination: {
+        currentPage: Number(page),
+        totalPages: Math.ceil(totalItems / limit),
+        totalItems,
+        hasNext: page * limit < totalItems,
+        hasPrev: page > 1
+      }
+    });
+  } catch (error) {
+    res.status(500);
+    throw new Error(`Failed to fetch transportation items: ${error.message}`);
+  }
+});
+
+// Update transportation status (admin only)
+const updateTransportationStatus = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const {
+    status,
+    notes,
+    assignedTo,
+    pickupAddress,
+    deliveryAddress
+  } = req.body;
+
+  const product = await Product.findById(id);
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
+  }
+
+  if (!product.isSoldout || !product.soldTo) {
+    res.status(400);
+    throw new Error("Product is not sold or doesn't have a buyer");
+  }
+
+  try {
+    // Update transportation fields
+    const updateData = {};
+
+    if (status) {
+      updateData.transportationStatus = status;
+
+      // Set dates based on status
+      if (status === 'In Transit' && !product.transportationStartDate) {
+        updateData.transportationStartDate = new Date();
+      }
+      if (status === 'Delivered') {
+        updateData.transportationCompletedDate = new Date();
+      }
+
+      // Add to status history
+      const historyEntry = {
+        status,
+        timestamp: new Date(),
+        updatedBy: req.user._id,
+        notes: notes || ''
+      };
+
+      updateData.$push = {
+        transportationStatusHistory: historyEntry
+      };
+    }
+
+    if (notes !== undefined) updateData.transportationNotes = notes;
+    if (assignedTo !== undefined) updateData.transportationAssignedTo = assignedTo;
+    if (pickupAddress !== undefined) updateData.pickupAddress = pickupAddress;
+    if (deliveryAddress !== undefined) updateData.deliveryAddress = deliveryAddress;
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true }
+    ).populate('user', 'name email phone address')
+     .populate('soldTo', 'name email phone address');
+
+    res.status(200).json({
+      success: true,
+      message: "Transportation status updated successfully",
+      data: {
+        _id: updatedProduct._id,
+        title: updatedProduct.title,
+        transportationStatus: updatedProduct.transportationStatus,
+        transportationNotes: updatedProduct.transportationNotes,
+        transportationAssignedTo: updatedProduct.transportationAssignedTo,
+        transportationStatusHistory: updatedProduct.transportationStatusHistory,
+        pickupAddress: updatedProduct.pickupAddress,
+        deliveryAddress: updatedProduct.deliveryAddress,
+        transportationStartDate: updatedProduct.transportationStartDate,
+        transportationCompletedDate: updatedProduct.transportationCompletedDate
+      }
+    });
+  } catch (error) {
+    res.status(500);
+    throw new Error(`Failed to update transportation status: ${error.message}`);
+  }
+});
+
+// Get transportation statistics (admin only)
+const getTransportationStats = asyncHandler(async (req, res) => {
+  try {
+    const stats = await Product.aggregate([
+      {
+        $match: {
+          isSoldout: true,
+          soldTo: { $exists: true, $ne: null }
+        }
+      },
+      {
+        $group: {
+          _id: "$transportationStatus",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const formattedStats = {
+      'Ready for Pickup': 0,
+      'In Transit': 0,
+      'Delivered': 0,
+      'Not Required': 0
+    };
+
+    stats.forEach(stat => {
+      if (formattedStats.hasOwnProperty(stat._id)) {
+        formattedStats[stat._id] = stat.count;
+      }
+    });
+
+    // Get total sold items
+    const totalSoldItems = await Product.countDocuments({
+      isSoldout: true,
+      soldTo: { $exists: true, $ne: null }
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        statusBreakdown: formattedStats,
+        totalSoldItems,
+        totalRequiringTransportation: totalSoldItems - formattedStats['Not Required']
+      }
+    });
+  } catch (error) {
+    res.status(500);
+    throw new Error(`Failed to fetch transportation statistics: ${error.message}`);
+  }
+});
+
 module.exports = {
   createProduct,
   getAllProducts,
@@ -1438,4 +1679,8 @@ module.exports = {
   endAuctionEarly,
   changeAuctionStatus,
   getAuctionBidHistory,
+  // Transportation management functions
+  getItemsForTransportation,
+  updateTransportationStatus,
+  getTransportationStats,
 };

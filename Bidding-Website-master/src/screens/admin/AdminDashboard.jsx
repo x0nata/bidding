@@ -14,7 +14,8 @@ import {
   MdAttachMoney,
   MdCategory,
   MdMenu,
-  MdClose
+  MdClose,
+  MdLocalShipping
 } from "react-icons/md";
 import { HiOutlineUsers } from "react-icons/hi2";
 import { RiAuctionFill } from "react-icons/ri";
@@ -46,6 +47,7 @@ export const AdminDashboard = () => {
     { id: 'overview', label: 'Overview', icon: MdDashboard },
     { id: 'users', label: 'User Management', icon: MdPeople },
     { id: 'auctions', label: 'Auction Management', icon: MdGavel },
+    { id: 'transportation', label: 'Transportation', icon: MdLocalShipping },
   ];
 
   // Fetch real-time system statistics
@@ -196,6 +198,10 @@ export const AdminDashboard = () => {
         return <UserManagement />;
       case 'auctions':
         return <AuctionManagement />;
+      case 'transportation':
+        // Redirect to the transportation management page
+        navigate('/admin/transportation');
+        return null;
       default:
         return renderOverview();
     }

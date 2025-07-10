@@ -207,6 +207,53 @@ const productSchema = mongoose.Schema(
     sellerAmount: {
       type: Number,
     },
+    // Transportation Management Fields
+    transportationStatus: {
+      type: String,
+      enum: ['Ready for Pickup', 'In Transit', 'Delivered', 'Not Required'],
+      default: 'Not Required',
+    },
+    transportationNotes: {
+      type: String,
+      trim: true,
+    },
+    transportationAssignedTo: {
+      type: String, // Name or ID of delivery personnel
+      trim: true,
+    },
+    transportationStatusHistory: [{
+      status: {
+        type: String,
+        enum: ['Ready for Pickup', 'In Transit', 'Delivered'],
+        required: true,
+      },
+      timestamp: {
+        type: Date,
+        default: Date.now,
+      },
+      updatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      notes: {
+        type: String,
+        trim: true,
+      },
+    }],
+    pickupAddress: {
+      type: String, // Seller's pickup address
+      trim: true,
+    },
+    deliveryAddress: {
+      type: String, // Buyer's delivery address
+      trim: true,
+    },
+    transportationStartDate: {
+      type: Date,
+    },
+    transportationCompletedDate: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );
