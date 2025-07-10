@@ -10,7 +10,7 @@ import { RiAuctionFill } from "react-icons/ri";
 import { GiTakeMyMoney } from "react-icons/gi";
 import { formatETB } from "../../utils/currency";
 import { getProductById, getAuctionDetails } from "../../redux/slices/productSlice";
-import { placeBid, getBidsForProduct, setProxyBid } from "../../redux/slices/biddingSlice";
+import { placeBid, getBidsForProduct } from "../../redux/slices/biddingSlice";
 import { showSuccess, showError } from "../../redux/slices/notificationSlice";
 import { apiEndpoints } from "../../services/api";
 import websocketService from "../../services/websocket";
@@ -34,12 +34,9 @@ export const ProductsDetailsPage = () => {
 
   const [activeTab, setActiveTab] = useState("description");
   const [bidAmount, setBidAmount] = useState("");
-  const [proxyBidAmount, setProxyBidAmount] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [timeLeft, setTimeLeft] = useState("");
-
-  const [showProxyBid, setShowProxyBid] = useState(false);
   const [isPlacingBid, setIsPlacingBid] = useState(false);
 
   const handleTabClick = (tab) => {
@@ -160,32 +157,7 @@ export const ProductsDetailsPage = () => {
     }
   };
 
-  const handleProxyBid = async () => {
-    if (!isAuthenticated) {
-      dispatch(showError("Please login to set proxy bids"));
-      navigate("/login");
-      return;
-    }
-
-    const minBid = parseFloat(currentBid?.amount || currentProduct?.startingPrice || 0) + 1;
-    if (!proxyBidAmount || parseFloat(proxyBidAmount) < minBid) {
-      dispatch(showError(`Proxy bid amount must be at least $${minBid}`));
-      return;
-    }
-
-    try {
-      await dispatch(setProxyBid({
-        productId: currentProduct._id,
-        maxAmount: parseFloat(proxyBidAmount),
-      })).unwrap();
-
-      dispatch(showSuccess("Proxy bid set successfully!"));
-      setProxyBidAmount("");
-      setShowProxyBid(false);
-    } catch (error) {
-      dispatch(showError(error || "Failed to set proxy bid"));
-    }
-  };
+  // Note: Proxy bidding functionality removed as it's not supported by the backend
 
   const handleBuyNow = () => {
     if (!isAuthenticated) {

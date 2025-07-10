@@ -77,29 +77,7 @@ export const getUserBids = createAsyncThunk(
   }
 );
 
-export const setProxyBid = createAsyncThunk(
-  'bidding/setProxyBid',
-  async (proxyBidData, { rejectWithValue }) => {
-    try {
-      const response = await api.post('/bidding/proxy', proxyBidData);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to set proxy bid');
-    }
-  }
-);
-
-export const cancelProxyBid = createAsyncThunk(
-  'bidding/cancelProxyBid',
-  async (productId, { rejectWithValue }) => {
-    try {
-      const response = await api.delete(`/bidding/proxy/${productId}`);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to cancel proxy bid');
-    }
-  }
-);
+// Note: Proxy bidding functionality removed as it's not supported by the backend
 
 // Bidding slice
 const biddingSlice = createSlice({
@@ -164,23 +142,6 @@ const biddingSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
         state.userBids = []; // Ensure it's always an array
-      })
-      // Set proxy bid
-      .addCase(setProxyBid.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(setProxyBid.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.message = 'Proxy bid set successfully';
-      })
-      .addCase(setProxyBid.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
-      })
-      // Cancel proxy bid
-      .addCase(cancelProxyBid.fulfilled, (state, action) => {
-        state.message = 'Proxy bid cancelled successfully';
       });
   },
 });
