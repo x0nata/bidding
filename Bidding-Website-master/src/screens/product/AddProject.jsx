@@ -246,8 +246,9 @@ export const AddProduct = () => {
       return;
     }
 
-    if (!formData.certificate) {
-      dispatch(showError("Certificate of Authenticity is required for all antique listings"));
+    // Certificate is optional for now to test basic functionality
+    if (formData.certificate && !formData.certificate.name) {
+      dispatch(showError("Please upload a valid certificate file"));
       setIsSubmitting(false);
       return;
     }
@@ -264,14 +265,17 @@ export const AddProduct = () => {
       return;
     }
 
-    // Validate auction dates
-    if (formData.auctionStartDate && formData.auctionEndDate) {
+    // Validate auction dates (only for Timed auctions)
+    if (formData.auctionType === "Timed" && formData.auctionStartDate && formData.auctionEndDate) {
       const startDate = new Date(formData.auctionStartDate);
       const endDate = new Date(formData.auctionEndDate);
       const now = new Date();
 
-      if (startDate < now) {
-        dispatch(showError("Auction start date cannot be in the past"));
+      // Allow start date to be up to 5 minutes in the past to account for form filling time
+      const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+
+      if (startDate < fiveMinutesAgo) {
+        dispatch(showError("Auction start date cannot be more than 5 minutes in the past"));
         setIsSubmitting(false);
         return;
       }

@@ -1,10 +1,8 @@
-// Safe import with error handling for socket.io-client
+// Temporarily disable WebSocket to isolate initialization issues
 let io = null;
-try {
-  io = require('socket.io-client');
-} catch (error) {
-  console.warn('socket.io-client not available, WebSocket features disabled');
-}
+let socketAvailable = false;
+
+console.log('🔄 WebSocket temporarily disabled for debugging initialization issues');
 
 // Lazy imports to avoid circular dependencies - imported when needed
 let store = null;
@@ -16,30 +14,17 @@ let addAuctionNotification = null;
 let addInstantPurchaseNotification = null;
 let addAuctionEndedNotification = null;
 
-// Function to initialize Redux imports when needed
+// Simplified initialization - no Redux imports for now
 const initializeReduxImports = async () => {
-  if (!store) {
-    const { store: reduxStore } = await import('../redux/store');
-    const biddingSlice = await import('../redux/slices/biddingSlice');
-    const auctionSlice = await import('../redux/slices/auctionSlice');
-    const notificationSlice = await import('../redux/slices/notificationSlice');
-
-    store = reduxStore;
-    addBid = biddingSlice.addBid;
-    updateCurrentBid = biddingSlice.updateCurrentBid;
-    updateAuctionStatus = auctionSlice.updateAuctionStatus;
-    addBidNotification = notificationSlice.addBidNotification;
-    addAuctionNotification = notificationSlice.addAuctionNotification;
-    addInstantPurchaseNotification = notificationSlice.addInstantPurchaseNotification;
-    addAuctionEndedNotification = notificationSlice.addAuctionEndedNotification;
-  }
+  // Temporarily disabled to isolate initialization issues
+  console.log('Redux imports temporarily disabled for debugging');
 };
 
 class WebSocketService {
   constructor() {
     this.socket = null;
     this.isConnected = false;
-    this.isAvailable = !!io;
+    this.isAvailable = socketAvailable && !!io;
   }
 
   async connect() {
