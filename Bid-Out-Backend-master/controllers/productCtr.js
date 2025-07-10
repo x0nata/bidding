@@ -316,7 +316,10 @@ const createProduct = asyncHandler(async (req, res) => {
 
       let uploadedFile;
       try {
-        uploadedFile = await cloudinary.uploader.upload(mainImageFile.path, {
+        // Convert buffer to base64 for Cloudinary upload (memory storage)
+        const base64String = `data:${mainImageFile.mimetype};base64,${mainImageFile.buffer.toString('base64')}`;
+
+        uploadedFile = await cloudinary.uploader.upload(base64String, {
           folder: "Bidding/Product",
           resource_type: "image",
           timeout: 60000 // 60 second timeout
@@ -793,7 +796,10 @@ const updateProduct = asyncHandler(async (req, res) => {
   if (req.file) {
     let uploadedFile;
     try {
-      uploadedFile = await cloudinary.uploader.upload(req.file.path, {
+      // Convert buffer to base64 for Cloudinary upload (memory storage)
+      const base64String = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
+      uploadedFile = await cloudinary.uploader.upload(base64String, {
         folder: "Product-Images",
         resource_type: "image",
       });

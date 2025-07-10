@@ -35,8 +35,10 @@ const uploadProductDocument = asyncHandler(async (req, res) => {
   }
 
   try {
-    // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
+    // Upload to Cloudinary (using memory storage)
+    const base64String = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
+    const result = await cloudinary.uploader.upload(base64String, {
       folder: "antique-auction/documents",
       resource_type: "auto", // Supports images, videos, and raw files
       public_id: `${productId}_${documentType}_${Date.now()}`,
@@ -101,8 +103,10 @@ const uploadAppraisalDocument = asyncHandler(async (req, res) => {
   }
 
   try {
-    // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
+    // Upload to Cloudinary (using memory storage)
+    const base64String = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
+    const result = await cloudinary.uploader.upload(base64String, {
       folder: "antique-auction/appraisal-documents",
       resource_type: "auto",
       public_id: `appraisal_${appraisalId}_${documentType}_${Date.now()}`,

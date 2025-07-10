@@ -327,6 +327,22 @@ export const AddProduct = () => {
       }
 
       const result = await response.json();
+      console.log('API response data:', result);
+
+      // Check if the response contains an error message (even with 200 status)
+      if (result.message && result.message.includes('ENOENT')) {
+        throw new Error('File upload failed: ' + result.message);
+      }
+
+      if (result.message && result.message.includes('error')) {
+        throw new Error(result.message);
+      }
+
+      // Check if we have a valid product ID
+      if (!result._id && (!result.data || !result.data._id)) {
+        throw new Error('Product creation failed - no product ID returned');
+      }
+
       console.log('Product creation successful:', result);
 
       // Show success message

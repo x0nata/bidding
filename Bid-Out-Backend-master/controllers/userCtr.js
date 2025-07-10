@@ -255,8 +255,10 @@ const updateUserProfile = asyncHandler(async (req, res) => {
         await cloudinary.uploader.destroy(publicId);
       }
 
-      // Upload new image to cloudinary
-      const result = await cloudinary.uploader.upload(req.file.path, {
+      // Upload new image to cloudinary (using memory storage)
+      const base64String = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
+      const result = await cloudinary.uploader.upload(base64String, {
         folder: "user-profiles",
         width: 300,
         height: 300,
