@@ -176,16 +176,16 @@ export const RecentlyAddedAuctions = () => {
         setLastUpdateTime(Date.now());
       };
 
-      // Subscribe to events
-      websocketService.on('newProduct', handleNewProduct);
-      websocketService.on('productUpdate', handleProductUpdate);
-      websocketService.on('auctionUpdate', handleProductUpdate);
+      // Subscribe to events (temporarily disabled)
+      // websocketService.on('newProduct', handleNewProduct);
+      // websocketService.on('productUpdate', handleProductUpdate);
+      // websocketService.on('auctionUpdate', handleProductUpdate);
 
-      // Cleanup function
+      // Cleanup function (temporarily disabled)
       return () => {
-        websocketService.off('newProduct', handleNewProduct);
-        websocketService.off('productUpdate', handleProductUpdate);
-        websocketService.off('auctionUpdate', handleProductUpdate);
+        // websocketService.off('newProduct', handleNewProduct);
+        // websocketService.off('productUpdate', handleProductUpdate);
+        // websocketService.off('auctionUpdate', handleProductUpdate);
       };
     };
 

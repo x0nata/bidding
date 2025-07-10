@@ -328,10 +328,10 @@ const AuctionManagement = () => {
     filterAndSortAuctions();
   }, [filterAndSortAuctions]);
 
-  // Monitor WebSocket connection status
+  // Monitor WebSocket connection status (temporarily disabled)
   useEffect(() => {
     const checkConnection = () => {
-      setWebsocketConnected(websocketService.isSocketConnected());
+      setWebsocketConnected(false); // WebSocket temporarily disabled
     };
 
     checkConnection();
@@ -376,15 +376,15 @@ const AuctionManagement = () => {
       handleBidUpdate(data);
     };
 
-    // Listen for various auction events
-    websocketService.on('auction_update', handleAuctionUpdate);
-    websocketService.on('bid_placed', handleAuctionUpdate);
-    websocketService.on('auction_ended', handleAuctionUpdate);
+    // Listen for various auction events (temporarily disabled)
+    // websocketService.on('auction_update', handleAuctionUpdate);
+    // websocketService.on('bid_placed', handleAuctionUpdate);
+    // websocketService.on('auction_ended', handleAuctionUpdate);
 
     return () => {
-      websocketService.off('auction_update', handleAuctionUpdate);
-      websocketService.off('bid_placed', handleAuctionUpdate);
-      websocketService.off('auction_ended', handleAuctionUpdate);
+      // websocketService.off('auction_update', handleAuctionUpdate);
+      // websocketService.off('bid_placed', handleAuctionUpdate);
+      // websocketService.off('auction_ended', handleAuctionUpdate);
     };
   }, []);
 

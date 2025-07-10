@@ -189,7 +189,7 @@ export const ActiveBidsCounter = ({
         </div>
         
         <div className="flex items-center gap-2">
-          {websocketService.isSocketConnected() && (
+          {false && ( // WebSocket temporarily disabled
             <div className="flex items-center gap-1 text-green-600">
               <FiActivity size={14} />
               <Caption className="text-green-600">Live</Caption>
