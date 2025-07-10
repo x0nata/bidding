@@ -4,6 +4,7 @@ import { TiEyeOutline } from "react-icons/ti";
 import { FaTruck, FaSearch, FaFilter } from "react-icons/fa";
 import { MdLocationOn, MdDateRange } from "react-icons/md";
 import { TransportationDetailModal } from "./TransportationDetailModal";
+import { adminTransportationApi } from "../../services/adminApi";
 
 export const TransportationManagement = () => {
   const [items, setItems] = useState([]);
@@ -37,44 +38,24 @@ export const TransportationManagement = () => {
     try {
       setLoading(true);
       setError(null);
-      const token = localStorage.getItem('token');
 
-      // Check if we have a valid token
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const queryParams = new URLSearchParams();
-
+      // Build query parameters
+      const queryParams = {};
       Object.entries(filters).forEach(([key, value]) => {
         if (value && value !== 'all') {
-          queryParams.append(key, value);
+          queryParams[key] = value;
         }
       });
 
-      const response = await fetch(`/api/product/admin/transportation?${queryParams}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      console.log('Fetching transportation items with params:', queryParams);
 
-      if (response.status === 401 || response.status === 403) {
-        throw new Error('Authentication failed. Please log in again.');
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Failed to fetch transportation items (${response.status})`);
-      }
-
-      const data = await response.json();
+      const data = await adminTransportationApi.getItems(queryParams);
       setItems(data.data || []);
       setPagination(data.pagination || {});
       console.log('Transportation items loaded successfully:', data.data?.length || 0, 'items');
     } catch (err) {
       console.error('Error fetching transportation items:', err);
-      setError(err.message);
+      setError(typeof err === 'string' ? err : 'Failed to fetch transportation items');
       setItems([]);
       setPagination({});
     } finally {
@@ -85,46 +66,14 @@ export const TransportationManagement = () => {
   // Fetch transportation statistics
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
+      console.log('Fetching transportation stats...');
 
-      // Check if we have a valid token
-      if (!token) {
-        console.warn('No authentication token found for transportation stats');
-        return;
-      }
-
-      const response = await fetch('/api/product/admin/transportation/stats', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data.data || {});
-        console.log('Transportation stats loaded successfully:', data.data);
-      } else if (response.status === 404) {
-        console.warn('Transportation stats endpoint not found, using default stats');
-        // Set default stats if endpoint doesn't exist
-        setStats({
-          statusBreakdown: {
-            'Ready for Pickup': 0,
-            'In Transit': 0,
-            'Delivered': 0,
-            'Not Required': 0
-          },
-          totalSoldItems: 0,
-          totalRequiringTransportation: 0
-        });
-      } else if (response.status === 401 || response.status === 403) {
-        console.error('Authentication failed for transportation stats');
-        // Don't clear auth state here, just log the error
-      } else {
-        console.error('Failed to fetch transportation stats:', response.status, response.statusText);
-      }
+      const data = await adminTransportationApi.getStats();
+      setStats(data.data || {});
+      console.log('Transportation stats loaded successfully:', data.data);
     } catch (err) {
-      console.error('Failed to fetch stats:', err);
+      console.error('Failed to fetch transportation stats:', err);
+
       // Set default stats on error to prevent UI issues
       setStats({
         statusBreakdown: {
@@ -166,31 +115,9 @@ export const TransportationManagement = () => {
 
   const handleStatusUpdate = async (itemId, updateData) => {
     try {
-      const token = localStorage.getItem('token');
+      console.log('Updating transportation status for item:', itemId, updateData);
 
-      if (!token) {
-        console.error('No authentication token found for status update');
-        return false;
-      }
-
-      const response = await fetch(`/api/product/admin/transportation/${itemId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updateData)
-      });
-
-      if (response.status === 401 || response.status === 403) {
-        console.error('Authentication failed for status update');
-        return false;
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Failed to update transportation status (${response.status})`);
-      }
+      await adminTransportationApi.updateStatus(itemId, updateData);
 
       console.log('Transportation status updated successfully for item:', itemId);
 
@@ -200,7 +127,7 @@ export const TransportationManagement = () => {
 
       return true;
     } catch (err) {
-      console.error('Error updating status:', err);
+      console.error('Error updating transportation status:', err);
       return false;
     }
   };

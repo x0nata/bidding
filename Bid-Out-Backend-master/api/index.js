@@ -714,6 +714,17 @@ app.get("/debug/routes", (req, res) => {
         update: "PUT /api/product/:id",
         delete: "DELETE /api/product/:id"
       },
+      admin: {
+        getAllProducts: "GET /api/product/admin/products",
+        getAllAuctions: "GET /api/product/admin/auctions",
+        updateAuction: "PUT /api/product/admin/auctions/:id",
+        endAuction: "POST /api/product/admin/auctions/:id/end",
+        changeAuctionStatus: "PATCH /api/product/admin/auctions/:id/status",
+        getAuctionBids: "GET /api/product/admin/auctions/:id/bids",
+        getTransportationItems: "GET /api/product/admin/transportation",
+        updateTransportationStatus: "PUT /api/product/admin/transportation/:id",
+        getTransportationStats: "GET /api/product/admin/transportation/stats"
+      },
       users: {
         getProfile: "GET /api/users/getuser",
         updateProfile: "PUT /api/users/profile",

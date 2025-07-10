@@ -287,10 +287,47 @@ export const adminCertificateApi = {
   }
 };
 
+// Admin Transportation Management APIs
+export const adminTransportationApi = {
+  // Get all items for transportation
+  getItems: async (params = {}) => {
+    try {
+      const response = await adminApi.get('/api/product/admin/transportation', { params });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to fetch transportation items';
+    }
+  },
+
+  // Get transportation statistics
+  getStats: async () => {
+    try {
+      const response = await adminApi.get('/api/product/admin/transportation/stats');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to fetch transportation stats';
+    }
+  },
+
+  // Update transportation status
+  updateStatus: async (itemId, updateData) => {
+    try {
+      const response = await adminApi.put(`/api/product/admin/transportation/${itemId}`, updateData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to update transportation status';
+    }
+  }
+};
+
+// Export the adminApi instance for direct use
+export { adminApi };
+
 export default {
   users: adminUserApi,
   products: adminProductApi,
   auctions: adminAuctionApi,
   analytics: adminAnalyticsApi,
-  certificates: adminCertificateApi
+  certificates: adminCertificateApi,
+  transportation: adminTransportationApi
 };

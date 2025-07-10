@@ -69,7 +69,7 @@ const AuctionManagement = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('All Categories');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -195,7 +195,15 @@ const AuctionManagement = () => {
       if (response && response.success) {
         const auctionsData = Array.isArray(response.auctions) ? response.auctions : [];
         console.log('Setting auctions data:', auctionsData.length, 'auctions found');
-        console.log('Setting auctions data:', auctionsData.length, 'auctions');
+        console.log('📥 Setting auctions data:', auctionsData.length, 'auctions');
+        console.log('📋 Auction data sample:', auctionsData.slice(0, 2).map(a => ({
+          id: a._id,
+          title: a.title,
+          status: a.status,
+          category: a.category,
+          isVerified: a.isVerified,
+          isSoldOut: a.isSoldOut
+        })));
         setAuctions(auctionsData);
         setPagination(response.pagination || {
           currentPage: 1,
@@ -298,6 +306,24 @@ const AuctionManagement = () => {
           auctionEndDate: new Date(Date.now() + 172800000).toISOString(),
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
+        },
+        {
+          _id: 'mock-3',
+          title: 'Mock Auction Item 3',
+          category: 'Art',
+          seller: { name: 'Mock Seller 3', email: 'seller3@example.com' },
+          auctionType: 'Standard',
+          startingBid: 300,
+          currentPrice: 350,
+          status: 'active',
+          isVerified: true,
+          isSoldOut: false,
+          bidCount: 8,
+          uniqueBidders: 5,
+          auctionStartDate: new Date().toISOString(),
+          auctionEndDate: new Date(Date.now() + 259200000).toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         }
       ];
 
@@ -310,13 +336,16 @@ const AuctionManagement = () => {
         hasNext: false,
         hasPrev: false
       });
-      setStats({
+      const mockStats = {
         total: mockAuctions.length,
-        active: 1,
-        completed: 0,
-        pending: 1,
-        ended: 0
-      });
+        active: mockAuctions.filter(a => a.status === 'active').length,
+        completed: mockAuctions.filter(a => a.status === 'completed' || a.isSoldOut).length,
+        pending: mockAuctions.filter(a => a.status === 'pending' || !a.isVerified).length,
+        ended: mockAuctions.filter(a => a.status === 'ended').length
+      };
+
+      console.log('📊 Setting mock stats:', mockStats);
+      setStats(mockStats);
     } finally {
       setLoading(false);
     }
@@ -326,26 +355,42 @@ const AuctionManagement = () => {
 
   // Filter and sort auctions
   const filterAndSortAuctions = useCallback(() => {
-    console.log('Filtering auctions. Total auctions:', auctions.length);
+    console.log('🔍 Filtering auctions...');
+    console.log('📊 Current state:', {
+      totalAuctions: auctions.length,
+      searchTerm,
+      filterStatus,
+      filterCategory,
+      sortBy,
+      sortOrder
+    });
+
     let filtered = [...auctions];
+    console.log('📋 Initial auctions:', filtered.map(a => ({ id: a._id, title: a.title, status: a.status, category: a.category })));
 
     // Apply search filter
     if (searchTerm) {
+      const beforeSearch = filtered.length;
       filtered = filtered.filter(auction =>
         auction.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         auction.seller?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         auction.category?.toLowerCase().includes(searchTerm.toLowerCase())
       );
+      console.log(`🔍 Search filter "${searchTerm}": ${beforeSearch} → ${filtered.length} auctions`);
     }
 
     // Apply status filter
     if (filterStatus !== 'all') {
+      const beforeStatus = filtered.length;
       filtered = filtered.filter(auction => auction.status === filterStatus);
+      console.log(`📊 Status filter "${filterStatus}": ${beforeStatus} → ${filtered.length} auctions`);
     }
 
     // Apply category filter
     if (filterCategory !== 'All Categories') {
+      const beforeCategory = filtered.length;
       filtered = filtered.filter(auction => auction.category === filterCategory);
+      console.log(`🏷️ Category filter "${filterCategory}": ${beforeCategory} → ${filtered.length} auctions`);
     }
 
     // Apply sorting
@@ -365,7 +410,8 @@ const AuctionManagement = () => {
       }
     });
 
-    console.log('Filtered auctions result:', filtered.length, 'auctions');
+    console.log('✅ Final filtered auctions:', filtered.length, 'auctions');
+    console.log('📋 Final auction list:', filtered.map(a => ({ id: a._id, title: a.title, status: a.status, category: a.category })));
     setFilteredAuctions(filtered);
   }, [auctions, searchTerm, filterStatus, filterCategory, sortBy, sortOrder]);
 
@@ -819,6 +865,31 @@ const AuctionManagement = () => {
             <option value="title-desc">Title Z-A</option>
           </select>
         </div>
+
+        {/* Debug Section - Remove in production */}
+        <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-purple-700">
+              Debug: {auctions.length} total, {filteredAuctions.length} filtered, Stats: {stats.total}
+            </span>
+            <button
+              onClick={() => {
+                console.log('🐛 Debug Info:');
+                console.log('- auctions.length:', auctions.length);
+                console.log('- filteredAuctions.length:', filteredAuctions.length);
+                console.log('- searchTerm:', searchTerm);
+                console.log('- filterStatus:', filterStatus);
+                console.log('- filterCategory:', filterCategory);
+                console.log('- stats:', stats);
+                console.log('- Raw auctions:', auctions);
+                console.log('- Filtered auctions:', filteredAuctions);
+              }}
+              className="bg-purple-500 text-white px-3 py-1 rounded text-sm hover:bg-purple-600"
+            >
+              Debug Console
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Bulk Actions */}
@@ -883,6 +954,7 @@ const AuctionManagement = () => {
               </p>
               <button
                 onClick={() => {
+                  console.log('🧹 Clearing all filters and refreshing...');
                   setSearchTerm('');
                   setFilterStatus('all');
                   setFilterCategory('All Categories');
