@@ -1,14 +1,32 @@
-# 🏺 Horn of Antiques - Ethiopian Antique Auction Platform
+#  Horn of Antiques - Ethiopian Antique Auction Platform
 
 <div align="center">
 
 ![Horn of Antiques](https://img.shields.io/badge/Horn%20of%20Antiques-Antique%20Auction%20Platform-gold?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjRkZENzAwIi8+Cjwvc3ZnPgo=)
 
+## 🛠️ Tech Stack
+
+### Frontend
+[![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
+[![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.2.3-764ABC?style=flat-square&logo=redux)](https://redux-toolkit.js.org/)
+[![React Router](https://img.shields.io/badge/React_Router-6.30.1-CA4245?style=flat-square&logo=react-router)](https://reactrouter.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3.3-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+[![Socket.io Client](https://img.shields.io/badge/Socket.io-4.7.5-010101?style=flat-square&logo=socket.io)](https://socket.io/)
+
+### Backend
+[![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?style=flat-square&logo=node.js)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-4.19.2-000000?style=flat-square&logo=express)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-8.3.2-47A248?style=flat-square&logo=mongodb)](https://mongodb.com/)
+[![Mongoose](https://img.shields.io/badge/Mongoose-8.3.2-880000?style=flat-square)](https://mongoosejs.com/)
+[![JWT](https://img.shields.io/badge/JWT-9.0.2-000000?style=flat-square&logo=json-web-tokens)](https://jwt.io/)
+
+### Cloud & Deployment
+[![Vercel](https://img.shields.io/badge/Vercel-Deployment-000000?style=flat-square&logo=vercel)](https://vercel.com/)
+[![Cloudinary](https://img.shields.io/badge/Cloudinary-Media_Storage-3448C5?style=flat-square&logo=cloudinary)](https://cloudinary.com/)
+
+
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Frontend-blue?style=for-the-badge)](https://bidding-9vw1.vercel.app/)
 [![API Status](https://img.shields.io/badge/🚀_API-Backend-green?style=for-the-badge)](https://bidding-sandy.vercel.app/)
-[![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?style=for-the-badge&logo=node.js)](https://nodejs.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=for-the-badge&logo=mongodb)](https://mongodb.com/)
 
 *A modern, full-stack auction platform dedicated to Ethiopian antiques and cultural artifacts*
 
@@ -106,31 +124,6 @@ CLOUDINARY_API_SECRET=your_cloudinary_secret
 ```
 
 ---
-
-## 🛠️ Tech Stack
-
-<div align="center">
-
-### Frontend
-[![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
-[![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.2.3-764ABC?style=flat-square&logo=redux)](https://redux-toolkit.js.org/)
-[![React Router](https://img.shields.io/badge/React_Router-6.30.1-CA4245?style=flat-square&logo=react-router)](https://reactrouter.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3.3-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
-[![Socket.io Client](https://img.shields.io/badge/Socket.io-4.7.5-010101?style=flat-square&logo=socket.io)](https://socket.io/)
-
-### Backend
-[![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?style=flat-square&logo=node.js)](https://nodejs.org/)
-[![Express.js](https://img.shields.io/badge/Express.js-4.19.2-000000?style=flat-square&logo=express)](https://expressjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-8.3.2-47A248?style=flat-square&logo=mongodb)](https://mongodb.com/)
-[![Mongoose](https://img.shields.io/badge/Mongoose-8.3.2-880000?style=flat-square)](https://mongoosejs.com/)
-[![JWT](https://img.shields.io/badge/JWT-9.0.2-000000?style=flat-square&logo=json-web-tokens)](https://jwt.io/)
-
-### Cloud & Deployment
-[![Vercel](https://img.shields.io/badge/Vercel-Deployment-000000?style=flat-square&logo=vercel)](https://vercel.com/)
-[![Cloudinary](https://img.shields.io/badge/Cloudinary-Media_Storage-3448C5?style=flat-square&logo=cloudinary)](https://cloudinary.com/)
-
-</div>
-
 ---
 
 ## 📖 Documentation
