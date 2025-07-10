@@ -61,7 +61,7 @@ export const getProductById = createAsyncThunk(
     try {
       // First try to get detailed auction data
       try {
-        const auctionResponse = await axios.get(`${API_URL}/product/auctions/${id}/details`);
+        const auctionResponse = await axios.get(`${API_URL}/api/product/auctions/${id}/details`);
         if (auctionResponse.data && auctionResponse.data.auction) {
           return auctionResponse.data.auction;
         }
@@ -70,7 +70,7 @@ export const getProductById = createAsyncThunk(
       }
 
       // Fallback to regular product endpoint
-      const response = await axios.get(`${API_URL}/product/${id}`);
+      const response = await axios.get(`${API_URL}/api/product/${id}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch product');
@@ -183,7 +183,7 @@ export const deleteProduct = createAsyncThunk(
   'product/deleteProduct',
   async (id, { rejectWithValue }) => {
     try {
-      await axios.delete(`${API_URL}/product/${id}`);
+      await axios.delete(`${API_URL}/api/product/${id}`);
       return id;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to delete product');
@@ -195,7 +195,7 @@ export const getUserProducts = createAsyncThunk(
   'product/getUserProducts',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/product/user`);
+      const response = await axios.get(`${API_URL}/api/product/user`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch user products');
@@ -213,7 +213,7 @@ export const updateUserListing = createAsyncThunk(
   async ({ productId, updateData }, { rejectWithValue }) => {
     try {
       // This would typically come from WebSocket, but we can also fetch fresh data
-      const response = await axios.get(`${API_URL}/product/auctions/${productId}/details`);
+      const response = await axios.get(`${API_URL}/api/product/auctions/${productId}/details`);
       return { productId, data: response.data.auction };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update listing');
@@ -251,7 +251,7 @@ export const getUpcomingAuctions = createAsyncThunk(
   'product/getUpcomingAuctions',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/product/auctions/upcoming`);
+      const response = await axios.get(`${API_URL}/api/product/auctions/upcoming`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch upcoming auctions');
@@ -263,7 +263,7 @@ export const getAuctionDetails = createAsyncThunk(
   'product/getAuctionDetails',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/product/auctions/${id}/details`);
+      const response = await axios.get(`${API_URL}/api/product/auctions/${id}/details`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch auction details');

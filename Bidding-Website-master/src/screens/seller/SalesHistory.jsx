@@ -148,7 +148,7 @@ const SalesHistory = () => {
 
     try {
       const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002/api';
-      await axios.post(`${API_URL}/bidding/end/${product._id}`, {}, {
+      await axios.post(`${API_URL}/api/bidding/end/${product._id}`, {}, {
         withCredentials: true
       });
 
