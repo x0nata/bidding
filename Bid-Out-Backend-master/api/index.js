@@ -294,6 +294,7 @@ app.get("/", async (req, res) => {
       message: "Horn of Antiques API Server",
       status: "running",
       timestamp: new Date().toISOString(),
+      version: "2.0.1", // Updated to force deployment
       environment: process.env.NODE_ENV || "development",
       database: {
         connected: dbState === 1,
