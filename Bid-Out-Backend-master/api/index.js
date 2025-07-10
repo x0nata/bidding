@@ -742,6 +742,40 @@ app.get("/debug/routes", (req, res) => {
   });
 });
 
+// File upload configuration debug endpoint
+app.get("/debug/file-upload", (req, res) => {
+  const { upload } = require("../utils/fileUpload");
+
+  res.json({
+    message: "File Upload Configuration Debug",
+    timestamp: new Date().toISOString(),
+    multerConfig: {
+      storageType: "memory", // We're using memory storage
+      maxFileSize: "5MB",
+      allowedTypes: "images only",
+      serverlessCompatible: true
+    },
+    cloudinaryConfig: {
+      configured: !!(process.env.CLOUDINARY_CLOUD_NAME &&
+                     process.env.CLOUDINARY_API_KEY &&
+                     process.env.CLOUDINARY_API_SECRET),
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME || "not configured",
+      hasApiKey: !!process.env.CLOUDINARY_API_KEY,
+      hasApiSecret: !!process.env.CLOUDINARY_API_SECRET
+    },
+    environment: {
+      nodeEnv: process.env.NODE_ENV,
+      isVercel: !!process.env.VERCEL,
+      platform: process.platform
+    },
+    notes: [
+      "Using multer.memoryStorage() for serverless compatibility",
+      "Files are processed as buffers and uploaded to Cloudinary",
+      "No local file system access required"
+    ]
+  });
+});
+
 // Test authentication endpoint
 app.post("/debug/test-login", async (req, res) => {
   try {
