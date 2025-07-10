@@ -55,12 +55,12 @@ export const ProductsDetailsPage = () => {
     }
   }, [dispatch, id]);
 
-  // Join auction room for real-time updates
+  // Join auction room for real-time updates (temporarily disabled)
   useEffect(() => {
     if (currentProduct?._id) {
-      websocketService.joinAuction(currentProduct._id);
+      // websocketService.joinAuction(currentProduct._id);
       return () => {
-        websocketService.leaveAuction(currentProduct._id);
+        // websocketService.leaveAuction(currentProduct._id);
       };
     }
   }, [currentProduct?._id]);
