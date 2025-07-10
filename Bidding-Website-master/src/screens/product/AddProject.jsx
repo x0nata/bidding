@@ -64,6 +64,12 @@ const initialState = {
   auctionEndDate: "",
   bidIncrement: "10",
   images: [],
+
+  // Pickup address for logistics
+  pickupAddress: "",
+  pickupCity: "",
+  pickupPhone: "",
+  pickupInstructions: "",
 };
 
 export const AddProduct = () => {
@@ -213,227 +219,135 @@ export const AddProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Form submitted - starting validation...');
 
     // Prevent double submission
-    if (isFormLoading) {
+    if (isSubmitting) {
+      console.log('Form already submitting, preventing double submission');
       return;
     }
 
     setIsSubmitting(true);
 
-    // Enhanced validation
-    if (!formData.title?.trim()) {
-      dispatch(showError("Please enter a title for your antique"));
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!formData.description?.trim()) {
-      dispatch(showError("Please provide a description"));
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!formData.category) {
-      dispatch(showError("Please select a category"));
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!formData.image && (!formData.images || formData.images.length === 0)) {
-      dispatch(showError("Please upload at least one image of your antique"));
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Certificate is optional for now to test basic functionality
-    if (formData.certificate && !formData.certificate.name) {
-      dispatch(showError("Please upload a valid certificate file"));
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!formData.startingBid || parseFloat(formData.startingBid) <= 0) {
-      dispatch(showError("Please enter a valid starting bid greater than 0"));
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (formData.auctionType === "Timed" && (!formData.auctionStartDate || !formData.auctionEndDate)) {
-      dispatch(showError("Please set auction start and end dates for timed auctions"));
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Validate auction dates (only for Timed auctions)
-    if (formData.auctionType === "Timed" && formData.auctionStartDate && formData.auctionEndDate) {
-      const startDate = new Date(formData.auctionStartDate);
-      const endDate = new Date(formData.auctionEndDate);
-      const now = new Date();
-
-      // Allow start date to be up to 5 minutes in the past to account for form filling time
-      const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
-
-      if (startDate < fiveMinutesAgo) {
-        dispatch(showError("Auction start date cannot be more than 5 minutes in the past"));
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (endDate <= startDate) {
-        dispatch(showError("Auction end date must be after start date"));
-        setIsSubmitting(false);
-        return;
-      }
-    }
-
-    // Set up timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      dispatch(showError("Request timed out. Please check your connection and try again."));
-      setIsSubmitting(false);
-    }, 30000); // 30 second timeout
-
     try {
-      // Prepare product data with proper formatting
-      const productData = {
-        ...formData,
-        price: formData.startingBid, // Use starting bid as base price
-        materials: formData.materials ? formData.materials.split(',').map(m => m.trim()).filter(m => m) : [],
-        techniques: formData.techniques ? formData.techniques.split(',').map(t => t.trim()).filter(t => t) : [],
-        // Ensure required fields are present
-        auctionType: formData.auctionType || 'Timed',
-        condition: formData.condition || 'Good',
-        rarity: formData.rarity || 'Common',
-        // Convert numeric fields
-        startingBid: parseFloat(formData.startingBid),
-        reservePrice: formData.reservePrice ? parseFloat(formData.reservePrice) : 0,
-        bidIncrement: formData.bidIncrement ? parseFloat(formData.bidIncrement) : 10,
-        height: formData.height ? parseFloat(formData.height) : undefined,
-        width: formData.width ? parseFloat(formData.width) : undefined,
-        lengthpic: formData.lengthpic ? parseFloat(formData.lengthpic) : undefined,
-        weigth: formData.weigth ? parseFloat(formData.weigth) : undefined,
-      };
+      // Enhanced validation
+      if (!formData.title?.trim()) {
+        throw new Error("Please enter a title for your antique");
+      }
 
+      if (!formData.description?.trim()) {
+        throw new Error("Please provide a description");
+      }
 
-      // Create product via MongoDB backend API with timeout handling
-      const result = await Promise.race([
-        dispatch(createProduct(productData)).unwrap(),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Request timeout')), 25000)
-        )
-      ]);
+      if (!formData.category) {
+        throw new Error("Please select a category");
+      }
 
+      if (!formData.startingBid || parseFloat(formData.startingBid) <= 0) {
+        throw new Error("Please enter a valid starting bid greater than 0");
+      }
 
-      // Clear timeout if successful
-      clearTimeout(timeoutId);
+      console.log('Validation passed, preparing form data...');
 
-      // Enhanced response handling for new backend structure
+      // Create FormData for submission
+      const submitData = new FormData();
 
-      // Handle both old and new response formats
-      let productId;
-      let createdProduct;
+      // Add basic fields
+      submitData.append('title', formData.title);
+      submitData.append('description', formData.description);
+      submitData.append('startingBid', formData.startingBid);
+      submitData.append('category', formData.category);
+      submitData.append('auctionType', formData.auctionType || 'Timed');
 
-      if (result.success && result.data) {
-        // New enhanced backend response format
-        productId = result.data._id;
-        createdProduct = result.data;
-      } else if (result.data?._id) {
-        // Legacy format: result.data._id
-        productId = result.data._id;
-        createdProduct = result.data;
-      } else if (result._id) {
-        // Direct format: result._id
-        productId = result._id;
-        createdProduct = result;
+      // Add optional fields
+      if (formData.reservePrice) submitData.append('reservePrice', formData.reservePrice);
+      if (formData.era) submitData.append('era', formData.era);
+      if (formData.period) submitData.append('period', formData.period);
+      if (formData.provenance) submitData.append('provenance', formData.provenance);
+      if (formData.condition) submitData.append('condition', formData.condition);
+      if (formData.conditionDetails) submitData.append('conditionDetails', formData.conditionDetails);
+      if (formData.historicalSignificance) submitData.append('historicalSignificance', formData.historicalSignificance);
+      if (formData.style) submitData.append('style', formData.style);
+      if (formData.rarity) submitData.append('rarity', formData.rarity);
+      if (formData.bidIncrement) submitData.append('bidIncrement', formData.bidIncrement);
+
+      // Add physical attributes
+      if (formData.height) submitData.append('height', formData.height);
+      if (formData.width) submitData.append('width', formData.width);
+      if (formData.lengthpic) submitData.append('lengthpic', formData.lengthpic);
+      if (formData.weigth) submitData.append('weigth', formData.weigth);
+      if (formData.mediumused) submitData.append('mediumused', formData.mediumused);
+
+      // Add pickup address fields
+      if (formData.pickupAddress) submitData.append('pickupAddress', formData.pickupAddress);
+      if (formData.pickupCity) submitData.append('pickupCity', formData.pickupCity);
+      if (formData.pickupPhone) submitData.append('pickupPhone', formData.pickupPhone);
+      if (formData.pickupInstructions) submitData.append('pickupInstructions', formData.pickupInstructions);
+
+      // Add materials and techniques as JSON arrays
+      if (formData.materials) {
+        const materialsArray = formData.materials.split(',').map(item => item.trim()).filter(item => item);
+        if (materialsArray.length > 0) {
+          submitData.append('materials', JSON.stringify(materialsArray));
+        }
+      }
+
+      if (formData.techniques) {
+        const techniquesArray = formData.techniques.split(',').map(item => item.trim()).filter(item => item);
+        if (techniquesArray.length > 0) {
+          submitData.append('techniques', JSON.stringify(techniquesArray));
+        }
+      }
+
+      // Add auction dates if provided
+      if (formData.auctionStartDate) submitData.append('auctionStartDate', formData.auctionStartDate);
+      if (formData.auctionEndDate) submitData.append('auctionEndDate', formData.auctionEndDate);
+
+      // Add images
+      if (formData.images && formData.images.length > 0) {
+        formData.images.forEach(image => {
+          submitData.append('images', image);
+        });
+      }
+
+      console.log('FormData prepared, making API request...');
+
+      // Make direct API request
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/product`, {
+        method: 'POST',
+        body: submitData,
+        credentials: 'include'
+      });
+
+      console.log('API response status:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('Product creation successful:', result);
+
+      // Show success message
+      dispatch(showSuccess('Antique listing created successfully!'));
+
+      // Navigate to the product page
+      if (result._id) {
+        navigate(`/details/${result._id}`);
+      } else if (result.data && result.data._id) {
+        navigate(`/details/${result.data._id}`);
       } else {
-        // Log the actual structure for debugging
-        throw new Error('Product creation failed - no product ID returned. Check console for response structure.');
+        navigate('/dashboard');
       }
 
-      if (!productId) {
-        throw new Error('Product creation failed - no product ID returned');
-      }
-
-
-      // Verify the product exists in the database by fetching it
-      try {
-        const verificationResult = await dispatch(getProductById(productId)).unwrap();
-        if (!verificationResult || !verificationResult._id) {
-          throw new Error('Product verification failed - item not found in database');
-        }
-      } catch (verificationError) {
-        throw new Error('Product may not have been saved properly to database');
-      }
-
-      // Refresh homepage products and active auctions after successful creation
-      // This ensures the new listing appears in "Recently Added Auctions"
-      try {
-        await Promise.all([
-          dispatch(getAllProducts()),
-          dispatch(getActiveAuctions())
-        ]);
-      } catch (refreshError) {
-        // Don't block navigation if refresh fails, but try individual refreshes
-        try {
-          await dispatch(getAllProducts());
-        } catch (e) {
-        }
-        try {
-          await dispatch(getActiveAuctions());
-        } catch (e) {
-        }
-
-      }
-
-      // Verify the product appears in the listings
-      const appearsInListings = await verifyProductInListings(productId);
-      if (!appearsInListings) {
-        // Try refreshing once more
-        await dispatch(getAllProducts());
-        const secondCheck = await verifyProductInListings(productId);
-        if (secondCheck) {
-        } else {
-        }
-      } else {
-      }
-
-      // Only show success message after all verifications pass
-      setIsSubmitting(false);
-      dispatch(showSuccess("Antique listing created successfully and added to auction!"));
-
-      // Small delay to ensure state updates are processed
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Navigate to the created product page to show it was created
-      navigate(`/details/${productId}`);
     } catch (error) {
-      // Clear timeout and reset loading state on error
-      clearTimeout(timeoutId);
+      console.error('Form submission error:', error);
+      dispatch(showError(error.message || 'Failed to create listing'));
+    } finally {
       setIsSubmitting(false);
-
-      // Enhanced error handling with specific messages
-      let errorMessage = "Failed to create antique listing. Please try again.";
-
-      if (error.message === 'Request timeout') {
-        errorMessage = "Request timed out. Please check your internet connection and try again.";
-      } else if (error.message?.includes('no product ID returned')) {
-        errorMessage = "Product creation failed - server response was invalid. Please check the console for details and try again.";
-      } else if (error.message?.includes('Network Error') || error.message?.includes('ERR_NETWORK')) {
-        errorMessage = "Network error. Please check your connection and try again.";
-      } else if (error.message?.includes('500')) {
-        errorMessage = "Server error. Please try again later.";
-      } else if (error.message?.includes('401') || error.message?.includes('unauthorized')) {
-        errorMessage = "Authentication error. Please log in and try again.";
-      } else if (error.message?.includes('400')) {
-        errorMessage = "Invalid data provided. Please check your form and try again.";
-      } else if (error.message) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      }
-
-      dispatch(showError(errorMessage));
     }
+
   };
   return (
     <>
@@ -859,6 +773,68 @@ export const AddProduct = () => {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Pickup Address for Logistics */}
+          <div className="space-y-4">
+            <Title level={6}>Pickup Address</Title>
+            <Caption className="text-gray-600">
+              Provide the address where our team can collect the item after the auction ends.
+            </Caption>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <Caption className="mb-2">Street Address</Caption>
+                <input
+                  type="text"
+                  name="pickupAddress"
+                  value={formData.pickupAddress}
+                  onChange={handleInputChange}
+                  className={commonClassNameOfInput}
+                  placeholder="e.g., 123 Main Street, Apartment 4B"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div>
+                <Caption className="mb-2">City</Caption>
+                <input
+                  type="text"
+                  name="pickupCity"
+                  value={formData.pickupCity}
+                  onChange={handleInputChange}
+                  className={commonClassNameOfInput}
+                  placeholder="e.g., Addis Ababa"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div>
+                <Caption className="mb-2">Contact Phone</Caption>
+                <input
+                  type="tel"
+                  name="pickupPhone"
+                  value={formData.pickupPhone}
+                  onChange={handleInputChange}
+                  className={commonClassNameOfInput}
+                  placeholder="e.g., +251 911 123456"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <Caption className="mb-2">Special Instructions</Caption>
+                <textarea
+                  name="pickupInstructions"
+                  value={formData.pickupInstructions}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className={commonClassNameOfInput}
+                  placeholder="e.g., Ring doorbell twice, item is in the basement, available weekdays 9-5"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Submit Button */}
