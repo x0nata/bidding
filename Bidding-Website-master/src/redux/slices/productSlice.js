@@ -83,6 +83,7 @@ export const createProduct = createAsyncThunk(
   async (productData, { rejectWithValue }) => {
     try {
       const formData = new FormData();
+      let totalFileSize = 0;
 
       // Handle each field appropriately
       Object.keys(productData).forEach(key => {
@@ -91,11 +92,13 @@ export const createProduct = createAsyncThunk(
         if (key === 'image' && value instanceof File) {
           // Handle single image file
           formData.append('image', value);
+          totalFileSize += value.size;
         } else if (key === 'images' && Array.isArray(value)) {
           // Handle multiple images
           value.forEach(file => {
             if (file instanceof File) {
               formData.append('images', file);
+              totalFileSize += file.size;
             }
           });
         } else if (key === 'materials' && Array.isArray(value)) {
@@ -112,6 +115,14 @@ export const createProduct = createAsyncThunk(
           formData.append(key, value);
         }
       });
+
+      // Check total payload size (Vercel limit is ~4.5MB)
+      const totalSizeMB = totalFileSize / (1024 * 1024);
+      console.log(`Total payload size: ${totalSizeMB.toFixed(2)}MB`);
+
+      if (totalSizeMB > 4) {
+        throw new Error(`Payload too large (${totalSizeMB.toFixed(2)}MB). Please compress images or use fewer files. Maximum allowed: 4MB`);
+      }
 
       // Add timeout to the request
       const response = await axios.post(`${API_URL}/api/product`, formData, {

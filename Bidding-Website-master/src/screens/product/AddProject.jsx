@@ -7,6 +7,7 @@ import { createProduct, getAllProducts, getActiveAuctions, getProductById } from
 import { getAllCategories } from "../../redux/slices/categorySlice";
 import { showSuccess, showError } from "../../redux/slices/notificationSlice";
 import { verifyProductInListings } from "../../utils/dataFetching";
+import { compressImages, validateFile, smartCompressImage } from "../../utils/imageCompression";
 
 // Comprehensive antique categories
 const ANTIQUE_CATEGORIES = [
@@ -85,22 +86,73 @@ export const AddProduct = () => {
     }
   }, [error, dispatch]);
 
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const { name, value, type, files } = e.target;
 
     if (type === "file") {
       const selectedFiles = Array.from(files);
-      setImageFiles(selectedFiles);
 
-      // Create previews
-      const previews = selectedFiles.map(file => URL.createObjectURL(file));
-      setImagePreviews(previews);
+      // Validate files first
+      const validationErrors = [];
+      for (const file of selectedFiles) {
+        const validation = validateFile(file, {
+          maxSizeMB: 10, // Allow larger files before compression
+          allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+        });
 
-      setFormData(prev => ({
-        ...prev,
-        image: selectedFiles[0], // Use first file as main image
-        images: selectedFiles
-      }));
+        if (!validation.isValid) {
+          validationErrors.push(...validation.errors);
+        }
+      }
+
+      if (validationErrors.length > 0) {
+        dispatch(showError(validationErrors[0]));
+        return;
+      }
+
+      // Show loading state
+      setIsSubmitting(true);
+      dispatch(showSuccess("Compressing images, please wait..."));
+
+      try {
+        // Compress images to reduce payload size
+        const compressedFiles = await compressImages(selectedFiles, {
+          maxWidth: 1200,
+          maxHeight: 1200,
+          quality: 0.8,
+          maxSizeKB: 400 // Target 400KB per image
+        });
+
+        setImageFiles(compressedFiles);
+
+        // Create previews
+        const previews = compressedFiles.map(file => URL.createObjectURL(file));
+        setImagePreviews(previews);
+
+        setFormData(prev => ({
+          ...prev,
+          image: compressedFiles[0], // Use first file as main image
+          images: compressedFiles
+        }));
+
+        // Calculate total payload size
+        const totalSize = compressedFiles.reduce((sum, file) => sum + file.size, 0);
+        const totalSizeMB = totalSize / (1024 * 1024);
+
+        console.log(`Total compressed payload: ${totalSizeMB.toFixed(2)}MB`);
+
+        if (totalSizeMB > 3) {
+          dispatch(showError("Total image size is still too large. Please use fewer or smaller images."));
+          return;
+        }
+
+        dispatch(showSuccess(`Images compressed successfully! Total size: ${totalSizeMB.toFixed(2)}MB`));
+      } catch (error) {
+        console.error('Image compression failed:', error);
+        dispatch(showError("Failed to compress images. Please try with smaller files."));
+      } finally {
+        setIsSubmitting(false);
+      }
     } else {
       setFormData(prev => ({
         ...prev,
@@ -109,7 +161,7 @@ export const AddProduct = () => {
     }
   };
 
-  const handleCertificateChange = (e) => {
+  const handleCertificateChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       // Validate file type
@@ -119,21 +171,41 @@ export const AddProduct = () => {
         return;
       }
 
-      // Validate file size (5MB max)
+      // Validate file size (5MB max before compression)
       if (file.size > 5 * 1024 * 1024) {
         dispatch(showError("Certificate file must be less than 5MB"));
         return;
       }
 
-      // Create preview URL for images
+      let processedFile = file;
       let previewUrl = null;
+
+      // Compress image certificates to reduce payload size
       if (file.type.startsWith('image/')) {
-        previewUrl = URL.createObjectURL(file);
+        try {
+          setIsSubmitting(true);
+          dispatch(showSuccess("Compressing certificate image..."));
+
+          processedFile = await smartCompressImage(file);
+          previewUrl = URL.createObjectURL(processedFile);
+
+          const originalSizeMB = file.size / (1024 * 1024);
+          const compressedSizeMB = processedFile.size / (1024 * 1024);
+
+          console.log(`Certificate compressed: ${originalSizeMB.toFixed(2)}MB → ${compressedSizeMB.toFixed(2)}MB`);
+          dispatch(showSuccess(`Certificate compressed: ${originalSizeMB.toFixed(2)}MB → ${compressedSizeMB.toFixed(2)}MB`));
+        } catch (error) {
+          console.error('Certificate compression failed:', error);
+          dispatch(showError("Failed to compress certificate. Using original file."));
+          previewUrl = URL.createObjectURL(file);
+        } finally {
+          setIsSubmitting(false);
+        }
       }
 
       setFormData(prev => ({
         ...prev,
-        certificate: file,
+        certificate: processedFile,
         certificatePreview: previewUrl
       }));
     }
@@ -755,8 +827,18 @@ export const AddProduct = () => {
                 disabled={isLoading}
               />
               <Caption className="text-gray-500 text-sm mt-1">
-                Upload high-quality images showing different angles of the antique
+                Upload high-quality images showing different angles of the antique. Images will be automatically compressed to optimize upload speed.
               </Caption>
+              {imageFiles.length > 0 && (
+                <div className="mt-2 p-2 bg-blue-50 rounded text-sm text-blue-700">
+                  <strong>Images ready:</strong> {imageFiles.length} file(s)
+                  {imageFiles.length > 0 && (
+                    <span className="ml-2">
+                      (Total: {(imageFiles.reduce((sum, file) => sum + file.size, 0) / (1024 * 1024)).toFixed(2)}MB)
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Image Previews */}
