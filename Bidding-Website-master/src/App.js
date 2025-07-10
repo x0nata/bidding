@@ -72,8 +72,15 @@ function App() {
     // Load categories
     dispatch(getAllCategories());
 
-    // Connect to WebSocket
-    websocketService.connect();
+    // Connect to WebSocket (async)
+    const connectWebSocket = async () => {
+      try {
+        await websocketService.connect();
+      } catch (error) {
+        console.warn('Failed to connect WebSocket:', error);
+      }
+    };
+    connectWebSocket();
 
     // Cleanup on unmount
     return () => {

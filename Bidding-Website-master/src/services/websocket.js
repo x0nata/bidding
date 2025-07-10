@@ -1,14 +1,3 @@
-// ES6 imports must be at the top for ESLint compliance
-import { store } from '../redux/store';
-import { addBid, updateCurrentBid } from '../redux/slices/biddingSlice';
-import { updateAuctionStatus } from '../redux/slices/auctionSlice';
-import {
-  addBidNotification,
-  addAuctionNotification,
-  addInstantPurchaseNotification,
-  addAuctionEndedNotification
-} from '../redux/slices/notificationSlice';
-
 // Safe import with error handling for socket.io-client
 let io = null;
 try {
@@ -17,6 +6,35 @@ try {
   console.warn('socket.io-client not available, WebSocket features disabled');
 }
 
+// Lazy imports to avoid circular dependencies - imported when needed
+let store = null;
+let addBid = null;
+let updateCurrentBid = null;
+let updateAuctionStatus = null;
+let addBidNotification = null;
+let addAuctionNotification = null;
+let addInstantPurchaseNotification = null;
+let addAuctionEndedNotification = null;
+
+// Function to initialize Redux imports when needed
+const initializeReduxImports = async () => {
+  if (!store) {
+    const { store: reduxStore } = await import('../redux/store');
+    const biddingSlice = await import('../redux/slices/biddingSlice');
+    const auctionSlice = await import('../redux/slices/auctionSlice');
+    const notificationSlice = await import('../redux/slices/notificationSlice');
+
+    store = reduxStore;
+    addBid = biddingSlice.addBid;
+    updateCurrentBid = biddingSlice.updateCurrentBid;
+    updateAuctionStatus = auctionSlice.updateAuctionStatus;
+    addBidNotification = notificationSlice.addBidNotification;
+    addAuctionNotification = notificationSlice.addAuctionNotification;
+    addInstantPurchaseNotification = notificationSlice.addInstantPurchaseNotification;
+    addAuctionEndedNotification = notificationSlice.addAuctionEndedNotification;
+  }
+};
+
 class WebSocketService {
   constructor() {
     this.socket = null;
@@ -24,7 +42,7 @@ class WebSocketService {
     this.isAvailable = !!io;
   }
 
-  connect() {
+  async connect() {
     // Early return if socket.io is not available
     if (!this.isAvailable) {
       console.log('🔄 WebSocket not available - using polling mode');
@@ -34,6 +52,9 @@ class WebSocketService {
     if (this.socket && this.isConnected) {
       return;
     }
+
+    // Initialize Redux imports before using them
+    await initializeReduxImports();
 
     // 🚨 VERCEL COMPATIBILITY: Check if WebSocket is disabled
     const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
