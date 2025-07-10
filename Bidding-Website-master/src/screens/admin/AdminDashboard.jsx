@@ -165,22 +165,7 @@ export const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Production Ready Message */}
-      <div className="bg-gradient-to-r from-green to-primary p-6 rounded-lg shadow-md text-white">
-        <div className="flex items-center space-x-4">
-          <MdVerified size={48} className="text-white" />
-          <div>
-            <Title level={4} className="text-white mb-2">🎉 System Ready for Production!</Title>
-            <p className="text-green-100">
-              Your antique auction platform has been successfully cleaned and is ready for real users.
-              All demo data has been removed, and the system is configured with proper admin credentials.
-            </p>
-            <div className="mt-3 text-sm text-green-100">
-              <p>✅ Database cleaned • ✅ Admin account configured • ✅ Production ready</p>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       {/* Quick Actions */}
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">

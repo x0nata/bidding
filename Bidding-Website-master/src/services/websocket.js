@@ -1,11 +1,4 @@
-// Safe import with error handling
-let io = null;
-try {
-  io = require('socket.io-client');
-} catch (error) {
-  console.warn('socket.io-client not available, WebSocket features disabled');
-}
-
+// ES6 imports must be at the top for ESLint compliance
 import { store } from '../redux/store';
 import { addBid, updateCurrentBid } from '../redux/slices/biddingSlice';
 import { updateAuctionStatus } from '../redux/slices/auctionSlice';
@@ -15,6 +8,14 @@ import {
   addInstantPurchaseNotification,
   addAuctionEndedNotification
 } from '../redux/slices/notificationSlice';
+
+// Safe import with error handling for socket.io-client
+let io = null;
+try {
+  io = require('socket.io-client');
+} catch (error) {
+  console.warn('socket.io-client not available, WebSocket features disabled');
+}
 
 class WebSocketService {
   constructor() {
