@@ -559,7 +559,7 @@ export const ProductsDetailsPage = () => {
                 )}
                   <div className="text-right">
                     <Title className="flex items-center justify-end gap-2">
-                      Current bid: <Caption className="text-3xl text-green">${getCurrentPrice().toLocaleString()}</Caption>
+                      Current bid: <Caption className="text-3xl text-green">ETB {getCurrentPrice().toLocaleString()}</Caption>
                     </Title>
                     <Caption className="text-gray-600">
                       {getBidsData()?.length || currentProduct?.totalBids || 0} bid{(getBidsData()?.length || currentProduct?.totalBids || 0) !== 1 ? 's' : ''}
