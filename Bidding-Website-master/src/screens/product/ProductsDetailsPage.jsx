@@ -8,7 +8,7 @@ import { AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
 
 import { RiAuctionFill } from "react-icons/ri";
 import { GiTakeMyMoney } from "react-icons/gi";
-import { formatETB } from "../../utils/currency";
+import { formatETB, formatETBNumber } from "../../utils/currency";
 import { getProductById, getAuctionDetails } from "../../redux/slices/productSlice";
 import { placeBid, getBidsForProduct } from "../../redux/slices/biddingSlice";
 import { showSuccess, showError } from "../../redux/slices/notificationSlice";
@@ -789,17 +789,17 @@ export const ProductsDetailsPage = () => {
                       )}
                       <div className="flex justify-between py-3 border-b">
                         <Title>Starting Price</Title>
-                        <Caption>{formatETB(currentProduct.startingBid || currentProduct.startingPrice || 0)}</Caption>
+                        <Caption>{formatETBNumber(currentProduct.startingBid || currentProduct.startingPrice || 0)}</Caption>
                       </div>
                       <div className="flex justify-between py-3 border-b">
                         <Title>Current Price</Title>
-                        <Caption className="text-green font-semibold">{formatETB(getCurrentPrice())}</Caption>
+                        <Caption className="text-green font-semibold">{formatETBNumber(getCurrentPrice())}</Caption>
                       </div>
                       {currentProduct.reservePrice && (
                         <div className="flex justify-between py-3 border-b">
                           <Title>Reserve Price</Title>
                           <Caption className={getCurrentPrice() >= currentProduct.reservePrice ? "text-green" : "text-orange-600"}>
-                            {formatETB(currentProduct.reservePrice)}
+                            {formatETBNumber(currentProduct.reservePrice)}
                             {getCurrentPrice() >= currentProduct.reservePrice && " (Met)"}
                           </Caption>
                         </div>
@@ -807,13 +807,13 @@ export const ProductsDetailsPage = () => {
                       {currentProduct.instantPurchasePrice && (
                         <div className="flex justify-between py-3 border-b">
                           <Title>Instant Purchase Price</Title>
-                          <Caption className="text-red-500">{formatETB(currentProduct.instantPurchasePrice)}</Caption>
+                          <Caption className="text-red-500">{formatETBNumber(currentProduct.instantPurchasePrice)}</Caption>
                         </div>
                       )}
                       {currentProduct.bidIncrement && (
                         <div className="flex justify-between py-3 border-b">
                           <Title>Bid Increment</Title>
-                          <Caption>{formatETB(currentProduct.bidIncrement)}</Caption>
+                          <Caption>{formatETBNumber(currentProduct.bidIncrement)}</Caption>
                         </div>
                       )}
                       <div className="flex justify-between py-3 border-b">

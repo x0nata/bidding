@@ -17,7 +17,7 @@ import concurrentBidHandler from '../../services/concurrentBidHandler';
 import { useBankBiddingBalance } from '../../hooks/useBankBalance';
 import BankAddBalanceModal from '../payment/BankAddBalanceModal';
 import ErrorHandlingService from '../../services/errorHandlingService';
-import { formatETB, generateQuickBidAmounts } from '../../utils/currency';
+import { formatETB, formatETBNumber, generateQuickBidAmounts } from '../../utils/currency';
 import mockBalanceIntegration from '../../services/mockBalanceIntegration';
 
 const BiddingInterface = ({ auction, onBidPlaced, onAuctionEnded, className = '' }) => {
@@ -350,7 +350,7 @@ const BiddingInterface = ({ auction, onBidPlaced, onAuctionEnded, className = ''
           <div className="text-center p-4 bg-white rounded-lg shadow-sm">
             <FiDollarSign className="mx-auto text-green text-3xl mb-2" />
             <Body className="text-gray-600 text-xs font-medium mb-1">Current Bid</Body>
-            <Title level={4} className="text-green font-bold text-lg">{formatETB(currentBid)}</Title>
+            <Title level={4} className="text-green font-bold text-lg">{formatETBNumber(currentBid)}</Title>
           </div>
           <div className="text-center p-4 bg-white rounded-lg shadow-sm">
             <FiUsers className="mx-auto text-blue-600 text-3xl mb-2" />
@@ -360,7 +360,7 @@ const BiddingInterface = ({ auction, onBidPlaced, onAuctionEnded, className = ''
           <div className="text-center p-4 bg-white rounded-lg shadow-sm">
             <BsGraphUp className="mx-auto text-purple-600 text-3xl mb-2" />
             <Body className="text-gray-600 text-xs font-medium mb-1 whitespace-nowrap">Min Increment</Body>
-            <Title level={4} className="text-purple-600 font-bold text-lg">{formatETB(minIncrement)}</Title>
+            <Title level={4} className="text-purple-600 font-bold text-lg">{formatETBNumber(minIncrement)}</Title>
           </div>
           <div className="text-center p-4 bg-white rounded-lg shadow-sm">
             {auction.instantPurchasePrice ? (
@@ -369,7 +369,7 @@ const BiddingInterface = ({ auction, onBidPlaced, onAuctionEnded, className = ''
                 <Body className="text-gray-600 text-xs font-medium mb-1 whitespace-nowrap">
                   {auction.auctionType === 'Live' ? 'Instant Win' : 'Buy It Now'}
                 </Body>
-                <Title level={4} className="text-red-600 font-bold text-lg">{formatETB(auction.instantPurchasePrice)}</Title>
+                <Title level={4} className="text-red-600 font-bold text-lg">{formatETBNumber(auction.instantPurchasePrice)}</Title>
               </>
             ) : (
               <>
@@ -571,7 +571,7 @@ const BiddingInterface = ({ auction, onBidPlaced, onAuctionEnded, className = ''
                     onClick={() => handleSuggestedBid(amount)}
                     className="bg-gray-100 hover:bg-green hover:text-white text-gray-700 px-4 py-3 rounded-lg transition-all duration-200 text-sm font-semibold border border-gray-200 hover:border-green transform hover:scale-105"
                   >
-                    {formatETB(amount)}
+                    {formatETBNumber(amount)}
                   </button>
                 ))}
               </div>
