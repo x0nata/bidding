@@ -492,7 +492,7 @@ export const ProductsDetailsPage = () => {
                   </div>
                   <p className="mt-2 text-sm">
                     {currentProduct.instantPurchasePrice
-                      ? `Bidding continues until someone bids ${formatETB(currentProduct.instantPurchasePrice)} or admin ends the auction.`
+                      ? `Bidding continues until someone bids ${formatETBNumber(currentProduct.instantPurchasePrice)} or admin ends the auction.`
                       : 'Bidding continues until admin ends the auction.'
                     }
                   </p>
@@ -550,7 +550,7 @@ export const ProductsDetailsPage = () => {
                         <p className="text-sm text-green-700">
                           This is a live auction with no time limit.
                           {currentProduct.instantPurchasePrice && (
-                            <span> Ends when someone bids {formatETB(currentProduct.instantPurchasePrice)} or admin closes it.</span>
+                            <span> Ends when someone bids {formatETBNumber(currentProduct.instantPurchasePrice)} or admin closes it.</span>
                           )}
                         </p>
                       </div>
@@ -570,13 +570,13 @@ export const ProductsDetailsPage = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
                     <Caption className="text-gray-600">Starting Price</Caption>
-                    <Title level={5}>{formatETB(currentProduct.startingBid || currentProduct.startingPrice)}</Title>
+                    <Title level={5}>{formatETBNumber(currentProduct.startingBid || currentProduct.startingPrice)}</Title>
                   </div>
                   {currentProduct.reservePrice && (
                     <div>
                       <Caption className="text-gray-600">Reserve Price</Caption>
                       <Title level={5} className={getCurrentPrice() >= currentProduct.reservePrice ? "text-green" : "text-orange-600"}>
-                        {formatETB(currentProduct.reservePrice)}
+                        {formatETBNumber(currentProduct.reservePrice)}
                         {getCurrentPrice() >= currentProduct.reservePrice && " (Met)"}
                       </Title>
                     </div>
@@ -584,7 +584,7 @@ export const ProductsDetailsPage = () => {
                   {currentProduct.instantPurchasePrice && (
                     <div>
                       <Caption className="text-gray-600">Instant Purchase</Caption>
-                      <Title level={5} className="text-red-500">{formatETB(currentProduct.instantPurchasePrice)}</Title>
+                      <Title level={5} className="text-red-500">{formatETBNumber(currentProduct.instantPurchasePrice)}</Title>
                     </div>
                   )}
                   {currentProduct.buyNowPrice && (
@@ -596,7 +596,7 @@ export const ProductsDetailsPage = () => {
                   {currentProduct.bidIncrement && (
                     <div>
                       <Caption className="text-gray-600">Bid Increment</Caption>
-                      <Title level={5}>{formatETB(currentProduct.bidIncrement)}</Title>
+                      <Title level={5}>{formatETBNumber(currentProduct.bidIncrement)}</Title>
                     </div>
                   )}
                 </div>
@@ -943,7 +943,7 @@ export const ProductsDetailsPage = () => {
                             <p className="text-sm text-green-700">
                               <strong>Live Auction:</strong> This auction has no fixed end time.
                               {currentProduct.instantPurchasePrice && (
-                                <span> It will end when someone bids {formatETB(currentProduct.instantPurchasePrice)} or the administrator closes it.</span>
+                                <span> It will end when someone bids {formatETBNumber(currentProduct.instantPurchasePrice)} or the administrator closes it.</span>
                               )}
                             </p>
                           </div>
@@ -994,17 +994,17 @@ export const ProductsDetailsPage = () => {
                       <div className="space-y-3">
                         <div className="flex justify-between py-2 border-b border-gray-200">
                           <span className="font-medium">Starting Price:</span>
-                          <span className="text-lg font-semibold">{formatETB(currentProduct.startingBid || currentProduct.startingPrice || 0)}</span>
+                          <span className="text-lg font-semibold">{formatETBNumber(currentProduct.startingBid || currentProduct.startingPrice || 0)}</span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-gray-200">
                           <span className="font-medium">Current Price:</span>
-                          <span className="text-lg font-semibold text-green-600">{formatETB(getCurrentPrice())}</span>
+                          <span className="text-lg font-semibold text-green-600">{formatETBNumber(getCurrentPrice())}</span>
                         </div>
                         {currentProduct.reservePrice && (
                           <div className="flex justify-between py-2 border-b border-gray-200">
                             <span className="font-medium">Reserve Price:</span>
                             <span className={`text-lg font-semibold ${getCurrentPrice() >= currentProduct.reservePrice ? "text-green-600" : "text-orange-600"}`}>
-                              {formatETB(currentProduct.reservePrice)}
+                              {formatETBNumber(currentProduct.reservePrice)}
                               {getCurrentPrice() >= currentProduct.reservePrice && (
                                 <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Met</span>
                               )}
@@ -1014,7 +1014,7 @@ export const ProductsDetailsPage = () => {
                         {currentProduct.instantPurchasePrice && (
                           <div className="flex justify-between py-2 border-b border-gray-200">
                             <span className="font-medium">Instant Purchase:</span>
-                            <span className="text-lg font-semibold text-red-500">{formatETB(currentProduct.instantPurchasePrice)}</span>
+                            <span className="text-lg font-semibold text-red-500">{formatETBNumber(currentProduct.instantPurchasePrice)}</span>
                           </div>
                         )}
                       </div>
@@ -1022,7 +1022,7 @@ export const ProductsDetailsPage = () => {
                         {currentProduct.bidIncrement && (
                           <div className="flex justify-between py-2 border-b border-gray-200">
                             <span className="font-medium">Bid Increment:</span>
-                            <span>{formatETB(currentProduct.bidIncrement)}</span>
+                            <span>{formatETBNumber(currentProduct.bidIncrement)}</span>
                           </div>
                         )}
                         <div className="flex justify-between py-2 border-b border-gray-200">
@@ -1038,7 +1038,7 @@ export const ProductsDetailsPage = () => {
                         {currentProduct.finalPrice && (
                           <div className="flex justify-between py-2 border-b border-gray-200">
                             <span className="font-medium">Final Sale Price:</span>
-                            <span className="text-lg font-semibold text-green-600">{formatETB(currentProduct.finalPrice)}</span>
+                            <span className="text-lg font-semibold text-green-600">{formatETBNumber(currentProduct.finalPrice)}</span>
                           </div>
                         )}
                       </div>

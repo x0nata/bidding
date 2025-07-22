@@ -5,7 +5,7 @@ import { MdTrendingUp, MdTrendingDown, MdRefresh, MdHistory, MdWifi, MdWifiOff }
 import { FiClock, FiDollarSign, FiUser, FiEye } from 'react-icons/fi';
 import { BsGraphUp, BsGraphDown } from 'react-icons/bs';
 import { useAuctionUpdates } from '../../hooks/useBiddingUpdates';
-import { formatETB } from '../../utils/currency';
+import { formatETB, formatETBNumber } from '../../utils/currency';
 
 const BidHistory = ({ auctionId, className = '', maxHeight = '400px' }) => {
   const { user } = useSelector((state) => state.auth);
@@ -277,7 +277,7 @@ const BidHistory = ({ auctionId, className = '', maxHeight = '400px' }) => {
                     <div>
                       <div className="flex items-center space-x-2">
                         <Title level={6} className="text-gray-800">
-                          {formatETB(bid.amount)}
+                          {formatETBNumber(bid.amount)}
                         </Title>
                         {bid.isWinning && (
                           <span className="bg-green text-white text-xs px-2 py-1 rounded-full font-medium">
@@ -299,7 +299,7 @@ const BidHistory = ({ auctionId, className = '', maxHeight = '400px' }) => {
                         {bid.increment > 0 && (
                           <>
                             <span>•</span>
-                            <span className="text-green">+{formatETB(bid.increment)}</span>
+                            <span className="text-green">+{formatETBNumber(bid.increment)}</span>
                           </>
                         )}
                       </div>

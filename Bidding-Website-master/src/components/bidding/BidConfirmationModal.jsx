@@ -2,7 +2,7 @@ import React from 'react';
 import { Title, Body } from '../common/Design';
 import { MdGavel, MdWarning, MdCheckCircle } from 'react-icons/md';
 import { FiDollarSign, FiTrendingUp } from 'react-icons/fi';
-import { formatETB } from '../../utils/currency';
+import { formatETB, formatETBNumber } from '../../utils/currency';
 
 const BidConfirmationModal = ({
   bidAmount,
@@ -40,12 +40,12 @@ const BidConfirmationModal = ({
             <div className="bg-blue-50 p-4 rounded-lg text-center">
               <FiDollarSign className="mx-auto text-blue-600 text-2xl mb-1" />
               <Body className="text-blue-600 text-sm">Current Bid</Body>
-              <Title level={4} className="text-blue-800">{formatETB(currentBid)}</Title>
+              <Title level={4} className="text-blue-800">{formatETBNumber(currentBid)}</Title>
             </div>
             <div className="bg-green-50 p-4 rounded-lg text-center">
               <FiTrendingUp className="mx-auto text-green text-2xl mb-1" />
               <Body className="text-green text-sm">Your Bid</Body>
-              <Title level={4} className="text-green">{formatETB(bidAmount)}</Title>
+              <Title level={4} className="text-green">{formatETBNumber(bidAmount)}</Title>
             </div>
           </div>
 
@@ -91,7 +91,7 @@ const BidConfirmationModal = ({
                 I have sufficient funds to complete this purchase
                 {userBalance && (
                   <span className="block text-xs text-gray-500 mt-1">
-                    Available balance: {formatETB(userBalance)}
+                    Available balance: {formatETBNumber(userBalance)}
                   </span>
                 )}
               </Body>

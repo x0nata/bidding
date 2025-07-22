@@ -192,7 +192,7 @@ const BiddingInterface = ({ auction, onBidPlaced, onAuctionEnded, className = ''
         finalAmount = response.finalPrice;
         setCurrentBid(response.finalPrice);
         setLastBidder({ id: user?.id, name: user?.name });
-        setBidSuccess(`🎉 Congratulations! You won the auction with an instant purchase of ${formatETB(response.finalPrice)}!`);
+        setBidSuccess(`🎉 Congratulations! You won the auction with an instant purchase of ${formatETBNumber(response.finalPrice)}!`);
         setBidAmount('');
 
         // Update auction status to ended
@@ -216,7 +216,7 @@ const BiddingInterface = ({ auction, onBidPlaced, onAuctionEnded, className = ''
         setCurrentBid(newBidAmount);
         setTotalBids(prev => prev + 1);
         setLastBidder({ id: user?.id, name: user?.name });
-        setBidSuccess(`Bid placed successfully for ${formatETB(newBidAmount)}!`);
+        setBidSuccess(`Bid placed successfully for ${formatETBNumber(newBidAmount)}!`);
         setBidAmount('');
       }
 
@@ -392,7 +392,7 @@ const BiddingInterface = ({ auction, onBidPlaced, onAuctionEnded, className = ''
             <Body className="text-green-800 font-medium">
               Live Auction - No time limit!
               {auction.instantPurchasePrice &&
-                ` Ends when someone bids ${formatETB(auction.instantPurchasePrice)} or admin closes it.`
+                ` Ends when someone bids ${formatETBNumber(auction.instantPurchasePrice)} or admin closes it.`
               }
             </Body>
           </div>
@@ -426,7 +426,7 @@ const BiddingInterface = ({ auction, onBidPlaced, onAuctionEnded, className = ''
                   This auction ended when a bidder reached the instant purchase price.
                 </Body>
                 <Body className="text-sm text-green-600 font-medium">
-                  Final Price: {formatETB(instantPurchaseData.finalPrice)}
+                  Final Price: {formatETBNumber(instantPurchaseData.finalPrice)}
                 </Body>
               </>
             ) : (
@@ -528,11 +528,10 @@ const BiddingInterface = ({ auction, onBidPlaced, onAuctionEnded, className = ''
                 </label>
                 <div className="mb-3">
                   <p className="text-sm text-gray-600">
-                    Minimum bid: <span className="font-semibold text-green">{formatETB(minimumBid)}</span>
+                    Minimum bid: <span className="font-semibold text-green">{formatETBNumber(minimumBid)}</span>
                   </p>
                 </div>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-lg font-medium">ETB</span>
                   <input
                     type="number"
                     value={bidAmount}
@@ -544,7 +543,7 @@ const BiddingInterface = ({ auction, onBidPlaced, onAuctionEnded, className = ''
                     placeholder={minimumBid.toString()}
                     min={minimumBid}
                     step="1"
-                    className="w-full pl-16 pr-4 py-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green focus:border-green outline-none text-xl font-bold text-center transition-all duration-200"
+                    className="w-full px-4 py-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green focus:border-green outline-none text-xl font-bold text-center transition-all duration-200"
                   />
                 </div>
                 <div className="mt-2 text-center">
@@ -623,7 +622,7 @@ const BiddingInterface = ({ auction, onBidPlaced, onAuctionEnded, className = ''
               </button>
               {bidAmount && (
                 <p className="text-center text-sm text-gray-600 mt-2">
-                  You're about to bid <span className="font-semibold text-green">{formatETB(bidAmount)}</span>
+                  You're about to bid <span className="font-semibold text-green">{formatETBNumber(bidAmount)}</span>
                 </p>
               )}
             </div>
@@ -686,11 +685,11 @@ const BiddingInterface = ({ auction, onBidPlaced, onAuctionEnded, className = ''
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Winning Bid:</span>
-                  <span className="font-bold text-green-600">{formatETB(instantPurchaseData.finalPrice)}</span>
+                  <span className="font-bold text-green-600">{formatETBNumber(instantPurchaseData.finalPrice)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Instant Purchase Price:</span>
-                  <span className="font-medium">{formatETB(instantPurchaseData.instantPurchasePrice)}</span>
+                  <span className="font-medium">{formatETBNumber(instantPurchaseData.instantPurchasePrice)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Auction Type:</span>
@@ -729,7 +728,7 @@ const BiddingInterface = ({ auction, onBidPlaced, onAuctionEnded, className = ''
             </Body>
             {instantPurchaseData && (
               <Body className="text-sm text-green-600 font-medium">
-                Won by instant purchase: {formatETB(instantPurchaseData.finalPrice)}
+                Won by instant purchase: {formatETBNumber(instantPurchaseData.finalPrice)}
               </Body>
             )}
           </div>
