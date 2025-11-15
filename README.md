@@ -141,38 +141,38 @@ CLOUDINARY_API_SECRET=your_cloudinary_secret
 📦 Horn of Antiques
 ├── 🎨 Bidding-Website-master/     # React Frontend
 │   ├── 📱 src/
-│   │   ├── 🧩 components/         # Reusable UI components
-│   │   ├── 📄 screens/            # Page components
-│   │   ├── 🔧 admin/              # Admin panel components
-│   │   ├── 🔄 redux/              # State management
-│   │   ├── 🛣️ routes/             # Route definitions
-│   │   └── 🔌 services/           # API integration
-│   └── 📦 public/                 # Static assets
+│   │   ├──  components/         # Reusable UI components
+│   │   ├──  screens/            # Page components
+│   │   ├──  admin/              # Admin panel components
+│   │   ├──  redux/              # State management
+│   │   ├──  routes/             # Route definitions
+│   │   └──  services/           # API integration
+│   └──  public/                 # Static assets
 └── ⚙️ Bid-Out-Backend-master/     # Node.js Backend
-    ├── 🛣️ routes/                 # API route handlers
-    ├── 📊 controllers/            # Business logic
-    ├── 🗃️ model/                  # Database models
-    ├── 🔒 middleWare/             # Authentication & validation
-    └── 🔧 services/               # External integrations
+    ├──  routes/                 # API route handlers
+    ├──  controllers/            # Business logic
+    ├──  model/                  # Database models
+    ├──  middleWare/             # Authentication & validation
+    └──  services/               # External integrations
 ```
 
 ### 🔑 Key Features Implementation
 
-- **🔐 Authentication**: JWT-based with role management (Buyer/Seller/Admin)
-- **💰 Payment Integration**: Mock payment system with balance management
-- **📸 Image Upload**: Cloudinary integration for antique photos
-- **⚡ Real-time Updates**: WebSocket for live bidding
-- **📱 Responsive Design**: Mobile-first approach with Tailwind CSS
-- **🔍 Search & Filter**: Advanced product discovery
-- **📊 Admin Dashboard**: Complete platform management
+- **Authentication**: JWT-based with role management (Buyer/Seller/Admin)
+- **Payment Integration**: Mock payment system with balance management
+- **Image Upload**: Cloudinary integration for antique photos
+- **Real-time Updates**: WebSocket for live bidding
+- **Responsive Design**: Mobile-first approach with Tailwind CSS
+- **Search & Filter**: Advanced product discovery
+- **Admin Dashboard**: Complete platform management
 
 ---
 
 ## 🌐 Deployment
 
 ### Production URLs
-- **🌍 Frontend**: [https://bidding-9vw1.vercel.app/](https://bidding-9vw1.vercel.app/)
-- **🔌 Backend API**: [https://bidding-sandy.vercel.app/](https://bidding-sandy.vercel.app/)
+- **Frontend**: [https://bidding-9vw1.vercel.app/](https://bidding-9vw1.vercel.app/)
+- **Backend API**: [https://bidding-sandy.vercel.app/](https://bidding-sandy.vercel.app/)
 
 ### Deployment Commands
 
@@ -188,39 +188,8 @@ npm run build
 # API endpoints available at /api/*
 ```
 
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our contributing guidelines:
-
-1. 🍴 Fork the repository
-2. 🌿 Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. 💾 Commit your changes (`git commit -m 'Add amazing feature'`)
-4. 📤 Push to the branch (`git push origin feature/amazing-feature`)
-5. 🔄 Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- **Ethiopian Cultural Heritage** - Preserving and celebrating Ethiopian antiques
-- **Open Source Community** - For the amazing tools and libraries
-- **Contributors** - Everyone who has contributed to this project
-
----
-
 <div align="center">
 
-**Made with 🤍 for Ethiopian Cultural Heritage**
-
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/horn-of-antiques?style=social)](https://github.com/yourusername/horn-of-antiques)
-[![GitHub forks](https://img.shields.io/github/forks/yourusername/horn-of-antiques?style=social)](https://github.com/yourusername/horn-of-antiques)
+**Made with 🤍**
 
 </div>
